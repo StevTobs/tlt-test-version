@@ -1,0 +1,34 @@
+{% extends 'account/navbar.html' %} 
+{% load static %} 
+{% load crispy_forms_tags%} 
+{% block content %}
+<body>
+  <br />
+  <div class="container bg-white shadow-md p-5 form-layout mt-4">
+    <h1>Login</h1>
+    <br />
+    {% if users_exist %}
+    <form method="POST" autocomplete="off">
+      {% csrf_token %} 
+      {{ LoginForm|crispy}}
+      <br />
+      <input class="btn btn-success" type="submit" value="Submit" />
+    </form>
+    <br />
+    <br />
+    {% else %}
+    <div class="alert alert-info" role="alert">
+      No accounts are currently registered. Please <a href="{% url 'register' %}">register</a> first.
+    </div>
+    <br />
+    <br />
+  {% endif %}
+  </div>
+  <br />
+  <br />
+
+</body>
+<footer class="footer-note">
+  tlt-system (v.0.01) -- เวอชั่นทดลองใช้งาน
+</footer>
+{% endblock content %}

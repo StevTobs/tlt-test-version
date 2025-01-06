@@ -1,0 +1,20 @@
+{% extends 'account/navbar.html' %} 
+{% load static %} 
+{% load crispy_forms_tags%} 
+{% block content %}
+
+  <br>
+  <div class="container bg-white shadow-md p-5 form-layout">
+  <h1>Register</h1>
+  <br>
+  <form method="POST" autocomplete="off">
+    {% csrf_token %} 
+    
+    {{ RegisterForm|crispy }}
+
+    <br>
+
+    <input class="btn btn-success" type="submit" value="Submit"></input>
+  </form>
+  <br>
+{% endblock content %}

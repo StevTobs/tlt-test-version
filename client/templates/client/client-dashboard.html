@@ -1,0 +1,50 @@
+{% extends 'client/navbar.html' %} 
+{% load static %} 
+{% block content %}
+<div class="container mt-4">
+  <!-- User Info Header -->
+  <div class="d-flex justify-content-end text-muted mb-3">
+    <small>Logged in as: <strong>{{ user.email }}</strong></small>
+  </div>
+
+  <!-- Dashboard Heading -->
+  <div class="text-center mb-4">
+    <h3 class="display-4">📊 ยินดีต้อนรับสู่ระบบ 'ทำเลทอง'</h3>
+    <p class="lead">Welcome to your personalized client space.</p>
+  </div>
+
+  <!-- Welcome Card -->
+  <div class="card shadow-lg border-0">
+    <div class="card-header bg-primary text-white">
+      <h5 class="mb-0">👨🏻‍💻 Hello, {{ user.first_name }} {{ user.last_name }}</h5>
+    </div>
+    <div class="card-body">
+      <h6 class="text-secondary mb-4">Here are your account details:</h6>
+      <ul class="list-group list-group-flush">
+        <!-- <li class="list-group-item">
+          <strong>Username:</strong> {{ user.username|default:"Not Set" }}
+        </li> -->
+
+        <li class="list-group-item">
+          <strong> Name:</strong> {{ user.first_name }} {{ user.last_name }}
+        </li>
+        <li class="list-group-item">
+          <strong>Email:</strong> {{ user.email }}
+        </li>
+      </ul>
+    </div>
+    <div class="card-footer text-center">
+      <a href="{% url 'location-analysis' %}" class="btn btn-primary">
+        เข้าสู่ระบบ
+      </a>
+    </div>
+  </div>
+
+  <!-- Footer Section -->
+  <div class="text-center mt-5">
+    <p class="text-muted">
+      Need help? <a href="#" class="text-primary">Contact Support</a>.
+    </p>
+  </div>
+</div>
+{% endblock content %}

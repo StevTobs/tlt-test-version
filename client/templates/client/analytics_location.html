@@ -1,0 +1,192 @@
+{% extends 'client/navbar.html' %}
+
+{% block content %}
+<div class="container my-5">
+    <h3 class="mb-4">ผลการวิเคราะห์พื้นที่</h3>
+    
+    <!-- Location Details -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <ul class="list-group">
+                <li class="list-group-item"><strong>Date:</strong> {{ location.date|date:"Y-m-d H:i:s" }}</li>
+                <li class="list-group-item"><strong>Province:</strong> {{ location.province }}</li>
+                <li class="list-group-item"><strong>Amphure:</strong> {{ location.amphure }}</li>
+                <li class="list-group-item"><strong>Tambon:</strong> {{ location.tambon }}</li>
+                <li class="list-group-item"><strong>Latitude:</strong> {{ location.lat }}</li>
+                <li class="list-group-item"><strong>Longitude:</strong> {{ location.lng }}</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+<div class="row mb-4">
+    <!-- Card 1: Energy Utilization -->
+    <div class="col-md-4 mb-3">
+        <div class="card text-white bg-primary h-100 shadow-sm">
+            <div class="card-header d-flex align-items-center">
+                <i class="fas fa-car fa-2x me-3" aria-hidden="true"></i>
+                <h5 class="mb-0">ปริมาณรถยนต์ไฟฟ้าเฉลี่ยรายสัปดาห์ </h5>
+            </div>
+            <div class="card-body d-flex flex-column justify-content-center">
+                <h3 class="card-title display-6">{{ stats.num_visits }} คัน</h3>
+                <a href="#"  class="btn btn-light mt-3">ดูรายละเอียด</a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Card 2: Frequency Utilization -->
+    <div class="col-md-4 mb-3">
+        <div class="card text-white bg-success h-100 shadow-sm">
+            <div class="card-header d-flex align-items-center">
+                <i class="fas fa-clock fa-2x me-3" aria-hidden="true"></i>
+                <h5 class="mb-0">ปริมาณการอัดประจุรถยนต์ไฟฟ้าเฉลี่ยรายสัปดาห์ </h5>
+            </div>
+            <div class="card-body d-flex flex-column justify-content-center">
+                <h3 class="card-title display-6">{{ stats.avg_time_spent }} kWh</h3>
+                <p class="card-text">
+                    ขาประจำ:  kWh, ขาจร:   kWh
+                </p>
+                <a href="#" class="btn btn-light mt-3">ดูรายละเอียด</a>
+            </div>
+
+        </div>
+    </div>
+    
+    <!-- Card 3: Average Daily Charging Period -->
+    <div class="col-md-4 mb-3">
+        <div class="card text-white bg-warning h-100 shadow-sm">
+            <div class="card-header d-flex align-items-center">
+                <i class="fas fa-bolt fa-2x me-3" aria-hidden="true"></i>
+                <h5 class="mb-0">ระยะเวลาเฉลี่ยในการชาร์จในแต่ละวัน (Average Daily Charging Period)</h5>
+            </div>
+            <div class="card-body d-flex flex-column justify-content-center">
+                <h3 class="card-title display-6">{{ stats.average_charging_hours }} ชั่วโมง</h3>
+                <p class="card-text">
+                    วันหยุด: {{ stats.charging_holiday }} ชั่วโมง, วันทำงาน: {{ stats.charging_workday }} ชั่วโมง
+                </p>
+                <a href="#"  class="btn btn-light mt-3">ดูรายละเอียด</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+    <!-- Charts Section -->
+    <div class="row">
+        <!-- Visits Over Time Chart -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    สรุปข้อมูลต้นทุน
+                </div>
+                <div class="card-body">
+                    <canvas id="visitsChart"></canvas>
+                    <ul>
+                        <li>ขนาดตู้ชาร์จ :</li>
+                        <li>จำนวนตู้ชาร์จ :</li>
+                        <li>ระยะทางเดินสายไฟ :</li>
+                        <li>ขนาดหม้อแปลง :</li>
+                        <li>ค่าติดตั้ง :</li>
+                        <li>... :</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Time Spent Distribution Chart -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    สรุปข้อมูลด้านการลงทุน
+                </div>
+                <div class="card-body">
+                    <canvas id="timeSpentChart"></canvas>
+                    <ul>
+                        <li>ระยะเวลาคืนทุน (Return of Investment : ROI) :</li>
+                        <li>Point of Interest (POI) :</li>
+                       
+                    
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Back Button -->
+    <a href="{% url 'location-analysis' %}" class="btn btn-secondary mt-4">Back to Report</a>
+
+    <a href="{% url 'display-dataframe' %}" class="btn btn-primary mt-4">display-dataframe</a>
+    <!-- 'get_coordinates' -->
+
+</div>
+
+<!-- Chart.js Scripts -->
+<script>
+    // Visits Over Time Chart
+    const visitsCtx = document.getElementById('visitsChart').getContext('2d');
+    const visitsChart = new Chart(visitsCtx, {
+        type: 'line',
+        data: {
+            labels: {{ stats.visits_over_time.labels|safe }},
+            datasets: [{
+                label: 'Number of Visits',
+                data: {{ stats.visits_over_time.data|safe }},
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Date'
+                    }
+                },
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Visits'
+                    },
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+    // Time Spent Distribution Chart
+    const timeSpentCtx = document.getElementById('timeSpentChart').getContext('2d');
+    const timeSpentChart = new Chart(timeSpentCtx, {
+        type: 'pie',
+        data: {
+            labels: {{ stats.time_spent_distribution.labels|safe }},
+            datasets: [{
+                label: 'Time Spent',
+                data: {{ stats.time_spent_distribution.data|safe }},
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.6)',
+                    'rgba(255, 205, 86, 0.6)',
+                    'rgba(75, 192, 192, 0.6)',
+                    'rgba(54, 162, 235, 0.6)',
+                    'rgba(153, 102, 255, 0.6)'
+                ],
+                borderColor: [
+                    'rgba(255,99,132,1)',
+                    'rgba(255, 205, 86, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(153, 102, 255, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true
+        }
+    });
+</script>
+{% endblock %}

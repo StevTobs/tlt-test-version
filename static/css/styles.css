@@ -1,0 +1,152 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@700&display=swap');
+/* <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai&display=swap" rel="stylesheet"> */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Thai&display=swap');
+/* Import Inter font */
+
+/* Apply basic styles for the body and page layout */
+body,
+html {
+    height: 100%;
+    background-color: #f0f4f8;
+    font-family: 'Noto Sans Thai', sans-serif;
+    /* Ensure the body and html take up the full height of the viewport */
+    margin: 0;
+    /* Remove default margin */
+    display: flex;
+    flex-direction: column;
+    /* Stack elements vertically */
+}
+
+
+.content {
+    flex: 1;
+    /* This will allow the content to take up available space */
+    padding: 20px;
+    font-family: 'Noto Sans Thai', sans-serif !important;
+}
+
+
+.btn-font {
+    font-family: 'Noto Sans Thai', sans-serif !important;
+    /* Force Noto Sans Thai font to button */
+}
+
+.tam-lay {
+    color: #a1c181;
+    /* Light green color */
+    font-style: italic;
+    font-weight: bold;
+    font-family: 'Inter', sans-serif;
+    /* Apply Inter font */
+    font-size: 2rem;
+    /* Adjust size as needed */
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4);
+    /* Subtle shadow */
+}
+
+.thong {
+    color: #fcca46;
+    /* Gold color */
+    font-style: italic;
+    font-weight: bold;
+    font-family: 'Inter', sans-serif;
+    font-size: 2rem;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    /* Slightly darker shadow */
+}
+
+.navbar-tlt {
+    background-color: #233D4D;
+    /* color:  #233D4D;  */
+}
+
+.navbar-username {
+    font-style: italic;
+    font-weight: lighter;
+    /* color: #fe7f2D; */
+    color: #619B8A;
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    /* font-weight: 100; */
+}
+
+.tlt-btn {
+    background-color: #A1C181;
+    color: white;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    /* Adds smooth transitions */
+}
+
+.tlt-btn:hover {
+    background-color: #8BAF69;
+    /* Slightly darker green for hover effect */
+    color: #F0F0F0;
+    /* Slightly lighter color for text on hover */
+}
+
+
+.tlt-btn:active {
+    background-color: #739957;
+    /* Even darker green to indicate a press/click */
+    color: #E0E0E0;
+    /* Slightly muted text color */
+    transform: scale(0.98);
+    /* Optional: a slight "pressed" effect */
+}
+
+/* Style for the footer with class bg-tlt */
+.bg-tlt {
+    background-color: #233D4D;
+    /* Example background color (light green) */
+    color: white;
+    /* Text color */
+    padding: 20px;
+    /* Padding for spacing */
+    text-align: center;
+    /* Center the text */
+    font-family: 'Inter', sans-serif;
+    /* Apply Inter font */
+    position: relative;
+    /* To ensure any other positioning works correctly */
+}
+
+.bg-tlt p {
+    margin: 0;
+    /* Remove default margin from the <p> tag */
+}
+
+.foot-text {
+    color: white;
+    /* White color */
+    font-family: 'Noto Sans Thai', sans-serif !important;
+    /* Add a font family if needed */
+    font-size: 10px;
+    /* Font size with px */
+    /* text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); */
+    /* Apply shadow to text */
+    /* font-style: italic; */
+    /* Make the text italic */
+    font-weight: lighter;
+    /* Apply lighter font weight */
+}
+
+.form-layout {
+    width: 500px;
+    border-radius: 20px;
+
+}
+
+html, body {
+    height: 100%;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+}
+main {
+    flex: 1;
+}
+footer {
+    text-align: center;
+    background-color: #343a40;
+    color: white;
+    padding: 10px 0;
+}

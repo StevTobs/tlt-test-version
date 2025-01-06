@@ -1,0 +1,34 @@
+{% extends 'account/navbar.html' %} {% load static %} {% block content %}
+
+
+  <br />
+  <br />
+
+  <div class="text-center content">
+    <h3>ทำเลดีๆ ... สำหรับ EV Charger</h3>
+
+    <br />
+
+    <p>
+      ตรวจสอบพื้นที่ก่อนลงทุนติดตั้งสถานี้ชาร์จรถยนต์ไฟฟ้าด้วยระบบ TLT-System
+    </p>
+
+    <br />
+
+    <a
+      class="btn btn-primary btn-font"
+      type="button"
+      href="{% url 'my-login' %}"
+    >
+      <i class="fa fa-angle-right" aria-hidden="true"></i> &nbsp; เข้าสู่ระบบ
+      &nbsp;</a
+    >
+  </div>
+
+
+  <!-- Footer -->
+  <footer class="bg-tlt">
+    <p class="foot-text">© 2024 Tam Lay Thong - Team. All rights reserved.</p>
+  </footer>
+{% endblock content %}
+

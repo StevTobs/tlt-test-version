@@ -1,0 +1,66 @@
+{% extends 'client/navbar.html' %}
+{% load crispy_forms_tags %} 
+{% block content %}
+<br />
+
+<div class="container bg-white shadow-md p-5 form-layout">
+  <h3>กรอกข้อมูลสำหรับการวิเคราะห์</h3>
+
+  <!-- Form Start -->
+  <form method="GET" action="{% url 'summary-data' %}">
+    <!-- Province Selection -->
+    <div class="mt-4">
+      <label for="provinceSelect" class="form-label">เลือกจังหวัด</label>
+      <select
+        class="form-select"
+        id="province"
+        name="province"
+        hx-get="{% url 'amphures' %}"
+        hx-trigger="change"
+        hx-target="#amphures"
+        hx-on:htmx:afterOnLoad="htmx.trigger('#summary-data', 'refresh')"
+      >
+        <option value="" selected>กรุณาเลือกจังหวัด</option>
+        {% for province in provinces %}
+        <option value="{{ province.pk }}">{{ province.name_th }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <!-- Amphure Selection -->
+    <div id="amphures" class="mt-4">
+      {% include 'client/partials/amphures.html' %}
+    </div>
+
+    <!-- Display Selected Province and Amphure -->
+    <div class="mt-4" id="summary-data">
+      <!-- <p>{{province_selected }}</p> -->
+      {% if province_selected or amphure_selected %}
+      <h5>Summary of Your Selection:</h5>
+      <ul>
+        {% if province_selected %}
+        <li>Selected Province: {{ province_selected }}</li>
+        {% endif %} {% if amphure_selected %}
+        <li>Selected Amphure: {{ amphure_selected }}</li>
+        {% endif %}
+      </ul>
+
+      {% else %}
+      <p>No province or amphure selected.</p>
+      {% endif %}
+    </div>
+
+    <!-- Submit Button -->
+ 
+    <div id="submit-btn" class="mt-4" hx-swap-oob="true">
+        <button type="submit" class="btn btn-primary" id="submit-btn" enabled >
+            Submit
+        </button>
+    </div>
+
+  </form>
+
+  <!-- Form End -->
+</div>
+
+{% endblock content %}

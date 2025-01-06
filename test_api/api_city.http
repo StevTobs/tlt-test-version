@@ -1,0 +1,9 @@
+GET https://raw.githubusercontent.com/kongvut/thai-province-data/master/api_province.json
+
+###
+
+GET https://raw.githubusercontent.com/kongvut/thai-province-data/master/api_amphure.json
+
+###
+
+GET https://raw.githubusercontent.com/kongvut/thai-province-data/master/api_province_with_amphure_tambon.json

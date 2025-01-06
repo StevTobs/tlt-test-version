@@ -1,0 +1,12 @@
+<!-- templates/display_dataframe.html -->
+{% extends 'client/navbar.html' %}
+
+{% block content %}
+<div class="container my-5">
+    <h1 class="mb-4">Location Report</h1>
+    <!-- Render the DataFrame HTML -->
+    <div>
+        {{ table|safe }}
+    </div>
+</div>
+{% endblock %}

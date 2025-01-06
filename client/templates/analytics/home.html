@@ -1,0 +1,133 @@
+<!-- client/templates/client/home.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Location Coordinates Finder</title>
+    <!-- Include Bootstrap CSS for styling (optional) -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+    <style>
+        /* Simple CSS for loading spinner */
+        .loader {
+            border: 8px solid #f3f3f3; /* Light grey */
+            border-top: 8px solid #3498db; /* Blue */
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+            display: none; /* Hidden by default */
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Center the form and results */
+        .container {
+            max-width: 500px;
+            margin: 50px auto;
+            text-align: center;
+        }
+
+        .result {
+            margin-top: 20px;
+            font-size: 1.2em;
+        }
+
+        .error {
+            color: red;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Find Coordinates</h1>
+        <form id="location-form">
+            <div class="form-group">
+                <label for="province">Province (จังหวัด):</label>
+                <input type="text" id="province" name="province" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="amphoe">Amphoe (อำเภอ):</label>
+                <input type="text" id="amphoe" name="amphoe" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="tambon">Tambon (ตำบล):</label>
+                <input type="text" id="tambon" name="tambon" class="form-control" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Get Coordinates</button>
+        </form>
+
+        <!-- Loading Spinner -->
+        <div class="loader" id="loader"></div>
+
+        <!-- Result Display -->
+        <div class="result" id="result"></div>
+        <div class="error" id="error"></div>
+
+        <!-- Action Buttons -->
+        <a href="{% url 'client:location-analysis' %}" class="btn btn-secondary mt-4">Back to Report</a>
+        <a href="{% url 'client:display-dataframe' %}" class="btn btn-primary mt-4">Display DataFrame</a>
+        <a href="{% url 'client:get_coordinates' %}" class="btn btn-primary mt-4">Get Coordinates</a>
+    </div>
+
+    <!-- Include jQuery and Bootstrap JS (optional) -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('location-form');
+            const loader = document.getElementById('loader');
+            const resultDiv = document.getElementById('result');
+            const errorDiv = document.getElementById('error');
+
+            form.addEventListener('submit', function(event) {
+                event.preventDefault(); // Prevent the form from submitting the traditional way
+
+                // Clear previous results and errors
+                resultDiv.textContent = '';
+                errorDiv.textContent = '';
+
+                // Show the loader
+                loader.style.display = 'block';
+
+                // Get form data
+                const province = document.getElementById('province').value;
+                const amphoe = document.getElementById('amphoe').value;
+                const tambon = document.getElementById('tambon').value;
+
+                // Prepare the AJAX request
+                const xhr = new XMLHttpRequest();
+                xhr.open('GET', `{% url 'client:get_coordinates' %}?province=${encodeURIComponent(province)}&amphoe=${encodeURIComponent(amphoe)}&tambon=${encodeURIComponent(tambon)}`, true);
+                xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState === XMLHttpRequest.DONE) {
+                        loader.style.display = 'none'; // Hide the loader
+                        if (xhr.status === 200) {
+                            const data = JSON.parse(xhr.responseText);
+                            if (data.latitude && data.longitude) {
+                                resultDiv.innerHTML = `<strong>Latitude:</strong> ${data.latitude}<br><strong>Longitude:</strong> ${data.longitude}`;
+                            } else {
+                                errorDiv.textContent = 'Could not retrieve coordinates.';
+                            }
+                        } else {
+                            try {
+                                const errorData = JSON.parse(xhr.responseText);
+                                errorDiv.textContent = errorData.error || 'An error occurred.';
+                            } catch (e) {
+                                errorDiv.textContent = 'An unexpected error occurred.';
+                            }
+                        }
+                    }
+                };
+
+                xhr.send();
+            });
+        });
+    </script>
+</body>
+</html>

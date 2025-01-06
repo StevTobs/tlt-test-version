@@ -1,0 +1,15 @@
+<select
+  class="form-select"
+  name="amphure"
+  hx-trigger="change"
+  hx-target="#summary_data"
+>
+  <option selected>กรุณาเลือกอำเภอ</option>
+
+  {% for amphure in amphures %}
+  <option value="{{amphure.pk}}">{{ amphure.name_th }}</option>
+  {% endfor %}
+</select>
+
+
+

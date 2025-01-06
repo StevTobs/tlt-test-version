@@ -1,0 +1,96 @@
+<!-- your_app/templates/your_app/start_task.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Long Running Task with Progress Bar</title>
+    <style>
+        /* Simple progress bar styling */
+        #progress-container {
+            width: 100%;
+            background-color: #f3f3f3;
+            border: 1px solid #ccc;
+            margin-top: 20px;
+        }
+        #progress-bar {
+            width: 0%;
+            height: 30px;
+            background-color: #4caf50;
+            text-align: center;
+            line-height: 30px;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <h1>Start Long Running Task</h1>
+    <button id="start-button">Start Task</button>
+
+    <div id="progress-container" style="display: none;">
+        <div id="progress-bar">0%</div>
+    </div>
+
+    <script>
+        document.getElementById('start-button').addEventListener('click', function() {
+            // Show the progress bar
+            document.getElementById('progress-container').style.display = 'block';
+            document.getElementById('progress-bar').style.width = '0%';
+            document.getElementById('progress-bar').innerText = '0%';
+
+            // Initialize WebSocket
+            const socket = new WebSocket('ws://' + window.location.host + '/ws/progress/');
+
+            socket.onmessage = function(e) {
+                const data = JSON.parse(e.data);
+                const progress = data['progress'];
+                document.getElementById('progress-bar').style.width = progress + '%';
+                document.getElementById('progress-bar').innerText = progress + '%';
+
+                if (progress >= 100) {
+                    socket.close();
+                }
+            };
+
+            socket.onopen = function(e) {
+                console.log('WebSocket connection opened.');
+            };
+
+            socket.onclose = function(e) {
+                console.log('WebSocket connection closed.');
+            };
+
+            // Start the task via AJAX
+            fetch("{% url 'start_task' %}", {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({})
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+            });
+
+            // Function to get CSRF token
+            function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        // Does this cookie string begin with the name we want?
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,4 @@
+<option value="">กรุณาเลือกตำบล</option>
+{% for tambon in tambons %}
+<option value="{{ tambon.id }}">{{ tambon.name_th }}</option>
+{% endfor %}
