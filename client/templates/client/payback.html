@@ -1,0 +1,229 @@
+{% extends 'client/navbar.html' %}
+{% load static %} 
+{% load humanize %}
+{% block content %}
+<div class="container mt-5">
+  <div class="page-content">
+    <div class="container-fluid">
+      <!-- start page title -->
+      <div class="row">
+        <div class="col-12">
+          <div
+            class="page-title-box d-flex align-items-center justify-content-between"
+          >
+            <!-- <h4 class="mb-0">การคืนทุน</h4> -->
+          </div>
+        </div>
+      </div>
+      <!-- end page title -->
+      <form method="POST">
+        {% csrf_token %}
+      <div class="row">
+        <div class="col-12">
+          <div class="card">
+            <div
+              class="card-header justify-content-between d-flex align-items-center"
+              style="background-color: #2f4f4f"
+            >
+              <h4 class="card-title" style="color: #ffff">Payback</h4>
+            </div>
+            <!-- end card header -->
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-xl-6">
+                    <div class="row mb-3">
+                      <label class="col-md-8 col-form-label">ต้นทุนการติดตั้ง EV Charger</label>
+                      <div class="col-md-4">
+                        <input
+                          class="form-control"
+                          type="text"
+                          placeholder="0"
+                          id="example-text-input"
+                          name="cost_total"
+                          value="40000"
+                          
+                        />
+                      </div>
+                    </div>
+                    <!-- end row -->
+                    <div class="mb-3 row">
+                      <label
+                        for="example-text-input"
+                        class="col-md-8 col-form-label"
+                        >ระดับแรงดันไฟฟ้า</label
+                      >
+                      <div class="col-md-4">
+                        <select class="form-select" id="volt_selection" name="volt_selection">
+                          <!-- <option "" disabled selected>โปรดเลือก</option> -->
+                          <option value="less22">ต่ำกว่า 22 kV</option>
+                          <option value="22">22 kV</option>
+                          
+                        </select>
+                      </div>
+                    </div>
+                    <div class="mb-3 row">
+                      <label
+                        for="example-text-input"
+                        class="col-md-8 col-form-label"
+                        >ราคาค่าชาร์จ</label
+                      >
+                      <div class="col-md-4">
+                        <input
+                          class="form-control"
+                          type="text"
+                          placeholder="0"
+                          id="example-text-input"
+                          name="price_charge"
+                          value="8"
+                          
+                        />
+                      </div>
+                    </div>
+                    
+                    <div class="mb-3 row">
+                      <label
+                        for="example-text-input"
+                        class="col-md-8 col-form-label"
+                        >จำนวนชั่วโมงที่ใช้บริการ (On Peak)</label
+                      >
+                      <div class="col-md-4">
+                        <input
+                          class="form-control"
+                          type="text"
+                          placeholder="0"
+                          id="example-text-input"
+                          name="hours_onpeak"
+                          value="8"
+                          
+                        />
+                      </div>
+                    </div>
+                    <div class="mb-3 row">
+                      <label
+                        for="example-text-input"
+                        class="col-md-8 col-form-label"
+                        >จำนวนชั่วโมงที่ใช้บริการ (Off Peak)</label
+                      >
+                      <div class="col-md-4">
+                        <input
+                          class="form-control"
+                          type="text"
+                          placeholder="0"
+                          id="example-text-input"
+                          name="hours_offpeak"
+                          value="0"
+                          
+                        />
+                      </div>
+                    </div>
+                    
+                    
+                    
+                    
+                    <div class="mb-3 row">
+                      <div class="col-md-4">
+                      <button
+                      type="submit"
+                      name = "submittotal"
+                      class="btn btn w-md"
+                      style="background-color: #233D4D; color: #ffff"
+                      >
+                      ประเมินการคืนทุน
+                      </button>
+                      
+                      </div>  
+                    </div>
+                  </form>
+                  
+                      
+                 
+                  <!-- end row -->
+
+                  <!-- end col -->
+
+                  <div class="col-xl-6">
+                    
+                  </div>
+                  <!-- end col -->
+                </div>
+                <!-- end row -->
+                <div class="col-xl-6">
+                  {% if payback_period %}
+                  <div class="row mb-3">                          
+                    <label class="col-md-8 col-form-label">ต้นทุนการติดตั้ง EV Charger</label>
+                    <div class="col-md-4">
+                      <label class="col-md-8 col-form-label">฿ {{cost_total|floatformat:2|intcomma}}</label>
+                    </div>
+                  </div>
+                  <!-- end row -->
+                  
+                  <div class="mb-3 row">
+                    <label
+                      for="example-text-input"
+                      class="col-md-8 col-form-label"
+                      >รายได้จากการชาร์จ</label
+                    >
+                    <div class="col-md-4">
+                      <label class="col-md-8 col-form-label">฿ {{income|floatformat:2|intcomma}}</label>
+                    </div>
+                  </div>
+                  
+                  <div class="mb-3 row">
+                    <label
+                      for="example-text-input"
+                      class="col-md-8 col-form-label"
+                      >ต้นทุนค่าดำเนินการ</label
+                    >
+                    <div class="col-md-4">
+                      <label class="col-md-8 col-form-label">฿ {{operating_costs|floatformat:2|intcomma}}</label>
+                    </div>
+                  </div>
+                  <div class="mb-3 row">
+                    <label
+                      for="example-text-input"
+                      class="col-md-8 col-form-label"
+                      >กำไรต่อปี</label
+                    >
+                    <div class="col-md-4">
+                      <label class="col-md-8 col-form-label">฿ {{profit|floatformat:2|intcomma}} </label>
+                    </div>
+                  </div>
+                  <div class="mb-3 row">
+                    <label
+                      for="example-text-input"
+                      class="col-md-8 col-form-label"
+                      >ระยะเวลาการคืนทุน</label
+                    >
+                    <div class="col-md-4">
+                      <label class="col-md-8 col-form-label">{{payback_period}}</label>
+                    </div>
+                  </div>
+                  {% endif %}
+                  
+                  
+                  
+                    
+               
+                
+
+                <div class="col-xl-6">
+                  
+                </div>
+                <!-- end col -->
+              </div>
+                {% if payback_period %}
+                  </div>  
+                  <div style="text-align: center;">
+                    <a 
+                      href="{% url 'cost-ev'%}" 
+                      class="btn btn w-md" 
+                      style="background-color: #233D4D; color: #ffff; padding: 10px 20px; border-radius: 5px; text-decoration: none;"
+                    >
+                      << คำนวณต้นทุนการติดตั้ง
+                    </a>
+                  </div> 
+                  {% endif %}
+                 
+    
+</div>
+{% endblock %}

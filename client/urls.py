@@ -36,4 +36,6 @@ urlpatterns = [
     path('delete-location/<datetime:pk>/', views.delete_location, name='delete-location'),
     path('analytics-location/<datetime:pk>/', views.analytics_location, name='analytics-location'),
     path('display-dataframe/', views.display_dataframe, name='display-dataframe'),
+    path('cost-ev/',views.calcostev,name='cost-ev'),
+    path('payback/',views.payback,name='payback'),
 ]

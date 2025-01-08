@@ -1,0 +1,574 @@
+{% extends 'client/navbar.html' %}
+{% load static %} 
+{% load humanize %}
+{% block content %}
+<div class="container mt-5">
+    
+    <div class="page-content">
+        <div class="container-fluid">
+          <!-- start page title -->
+          <div class="row">
+            <div class="col-12">
+              <div
+                class="page-title-box d-flex align-items-center justify-content-between"
+              >
+                <h4 class="mb-0">คำนวณราคาการติดตั้ง</h4>
+                
+              </div>
+            </div>
+          </div>
+          <br>
+          <!-- end page title -->
+          <form method="POST">
+            {% csrf_token %}
+          <div class="row">
+            <div class="col-12">
+              <div class="card">
+                <div
+                  class="card-header justify-content-between d-flex align-items-center"
+                  style="background-color: #233D4D"
+                >
+                  <h4 class="card-title" style="color: #ffff">AC Charger</h4>
+                </div>
+                <!-- end card header -->
+                  <div class="card-body">
+                    <div class="row">
+                      <div class="col-xl-6">
+                        <div class="row mb-3">
+                          <label class="col-md-8 col-form-label">ขนาดหม้อแปลง</label>
+                          <div class="col-md-4">
+                            <select class="form-select" id="transformerType" name="transformerType">
+                              <option "" disabled selected>โปรดเลือก</option>
+                              <option value="">ไม่ใช้หม้อแปลง</option>
+                              <option value="100">100</option>
+                              <option value="160">160</option>
+                              <option value="250">250</option>
+                            </select>
+                          </div>
+                        </div>
+                        <!-- end row -->
+                        
+                        <div class="mb-3 row">
+                          <label
+                            for="example-text-input"
+                            class="col-md-8 col-form-label"
+                            >ระยะสายจากแรงสูงถึงหม้อแปลง (เมตร)</label
+                          >
+                          <div class="col-md-4">
+                            <input
+                              class="form-control"
+                              type="text"
+                              placeholder="0"
+                              id="example-text-input"
+                              name="disthvtotr"
+                              value="0"
+                              
+                            />
+                          </div>
+                        </div>
+                        
+                        <div class="mb-3 row">
+                          <label
+                            for="example-text-input"
+                            class="col-md-8 col-form-label"
+                            >จำนวนเครื่อง (เครื่อง)</label
+                          >
+                          <div class="col-md-4">
+                            <input
+                              class="form-control"
+                              type="text"
+                              placeholder="0"
+                              id="example-text-input"
+                              name="numev"
+                              value="1"
+                              
+                            />
+                          </div>
+                        </div>
+                        <div class="row mb-3" id="chargerSizeContainer">
+                          <label class="col-md-8 col-form-label">ขนาดเครื่อง EV Charger (kW)</label>
+                          <div class="col-md-4">
+                            <!-- Dynamic charger size dropdowns will be added here -->
+                            <select class="form-select" id="evselection" name="evselection">
+                              <!-- <option "" disabled selected>โปรดเลือก</option> -->
+                              <option value="7">7 kW</option>
+                              <option value="22">22 kW</option>
+                            </select>
+                          </div>
+                        </div>
+                        <div class="row mb-3" id="chargerPackage">
+                          <label class="col-md-8 col-form-label">รวม Package ติดตั้ง</label>
+                          <div class="col-md-4">
+                            <!-- Dynamic charger size dropdowns will be added here -->
+                            <select class="form-select" id="packageselection" name="packageselection">
+                              <option value= "nonadd">ไม่รวม</option>
+                              <option value="add">รวม</option>
+                              
+                            </select>
+                          </div>
+                        </div>
+                        <div class="mb-3 row">
+                          <label
+                            for="example-text-input"
+                            class="col-md-8 col-form-label"
+                            >ระยะสายจากหม้อแปลง ถึง MDB เพิ่มจาก Package(เมตร)</label
+                          >
+                          <div class="col-md-4">
+                            <input
+                              class="form-control"
+                              type="text"
+                              placeholder="0"
+                              id="example-text-input"
+                              name="distrtomdb"
+                              value="0"
+                              
+                            />
+                          </div>
+                        </div>
+                        <div class="mb-3 row">
+                          <label
+                            for="example-text-input"
+                            class="col-md-8 col-form-label"
+                            >ระยะสายจาก MDB ถึง เครื่องชาร์จ เพิ่มจาก Package (เมตร)</label
+                          >
+                          <div class="col-md-4">
+                            <input
+                              class="form-control"
+                              type="text"
+                              placeholder="0"
+                              id="example-text-input"
+                              name="distmdbtoev"
+                              value="0"
+                              
+                            />
+                          </div>
+                        </div>
+                        
+                        {% if costtotal %}
+                        <br>
+                        <div class="mb-3 row">
+                          <label
+                            for="example-text-input"
+                            class="col-md-8 col-form-label"
+                            style="font-size: 20px; font-weight: bold;"
+                            >ราคาติดตั้งสถานีชาร์จ</label
+                          >
+                          <div class="col-md-4">
+                            
+                          <h3> {{ costtotal|intcomma }}</h3>
+                          
+                          
+                          </div>
+                        </div>
+                        {% endif %} 
+                          
+                     
+                      <!-- end row -->
+
+                      <!-- end col -->
+
+                      <div class="col-xl-6">
+                        
+
+                      </div>
+                      <!-- end col -->
+                    </div>
+                    <!-- end row -->
+                    
+                      
+                      </div>                   
+                                         
+                  </div>
+                  
+                  <!-- end card body -->
+                
+              </div>
+              <!-- end card -->
+            </div>
+            <!-- end col -->
+          </div>
+          <!-- end row -->
+
+          <div class="row">
+            <div class="col-xl-12">
+              <div class="card">
+                  <!-- <div
+                    class="card-header justify-content-between d-flex align-items-center"
+                    style="background-color: #233D4D"
+                  >
+                    <h4 class="card-title" style="color: #ffff">Add on</h4>
+                  </div> -->
+                  <!-- end card header -->
+
+                    <div class="card-body">
+                      <div class="row">
+                        <div class="col-lg-12">
+                          <div class="card">
+                              <div class="card-header justify-content-between d-flex align-items-center" style="background-color: #233D4D">
+                                  <h4 class="card-title" style="color: #ffff">Additional Service</h4>
+                              </div><!-- end card header -->
+                              <div class="card-body">
+                                  <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                                      <table class="table mb-0">
+                                          <thead style="position: sticky; top: 0; background-color: #fff; z-index: 1;">
+                                              <tr>
+                                                  <th>ลำดับที่</th>
+                                                  <th>รายการ</th>
+                                                  <th>หน่วย</th>
+                                                  <th>ราคา</th>
+                                                  <th>จำนวน</th>
+                      
+                                              </tr>
+                                          </thead>
+                                          <tbody>
+                                              <tr>
+                                                  <th scope="row">1</th>
+                                                  <td>งานคอริ่ง เจาะผนัง รูที่ 2 ขึ้นไป เพื่อดึงท่อร้อยสายไฟ (ไม่รวมงานเก็บสี)</td>
+                                                  <td>จุด</td>
+                                                  <td>330</td>
+                                                  <td>
+                                                    <input
+                                                      class="form-control"
+                                                      type="text"
+                                                      placeholder="0"
+                                                      id="example-text-input"
+                                                      name="addon1"
+                                                      value="0"
+                                                    />
+                                                  </td>
+                                        
+                                              </tr>
+                                              <tr>
+                                                  <th scope="row">2</th>
+                                                  <td>งานคอริ่ง เจาะพื้น เพื่อดึงท่อร้อยสายไฟ (ไม่รวมงานเก็บสี)</td>                                                                                                          
+                                                  <td>จุด</td>
+                                                  <td>550</td>
+                                                  <td>
+                                                    
+                                                    <input
+                                                      class="form-control"
+                                                      type="text"
+                                                      placeholder="0"
+                                                      id="example-text-input"
+                                                      name="addon2"
+                                                      value="0"
+                                                    />
+                                                 
+                                                  </td>
+                                                  
+                                              </tr>
+                                              <tr>
+                                                  <th scope="row">3</th>
+                                                  <td>งานขุดดิน - กลบดินเพื่อฝังท่อร้อยสายไฟ</td>
+                                                  <td>เมตร</td>
+                                                  <td>220</td>
+                                                  <td>
+                                                    <input
+                                                      class="form-control"
+                                                      type="text"
+                                                      placeholder="0"
+                                                      id="example-text-input"
+                                                      name="addon3"
+                                                      value="0"
+                                                    />
+                                                  </td>
+                                                  
+                                              </tr>
+                                              <tr>
+                                                <th scope="row">4</th>
+                                                <td>งานขุดดิน - กรีดผนังพื้นคอนกรีตทั่วไปเพื่อฝังท่อร้อยสายไฟ(รวมการปิดผิว)</td>
+                                                <td>เมตร</td>
+                                                <td>330</td>
+                                                <td>
+                                                  <input
+                                                      class="form-control"
+                                                      type="text"
+                                                      placeholder="0"
+                                                      id="example-text-input"
+                                                      name="addon4"
+                                                      value="0"
+                                                    />
+                                                </td>
+                                                
+                                              </tr>
+                                              <tr>
+                                                <th scope="row">5</th>
+                                                <td>งานขุดดิน - กรีดกระเบื้องโนเบิล/แกรนิตเพื่อฝังท่อร้อยสายไฟ (รวมการปิดผิว)</td>
+                                                <td>เมตร</td>
+                                                <td>810</td>
+                                                <td>
+                                                  <input
+                                                      class="form-control"
+                                                      type="text"
+                                                      placeholder="0"
+                                                      id="example-text-input"
+                                                      name="addon5"
+                                                      value="0"
+                                                    />
+                                                </td>
+                                                
+                                              </tr>
+                                              <tr>
+                                                <th scope="row">6</th>
+                                                <td>งานขุดดิน - กรีดพื้นถนนเพื่อฝังท่อร้อยสายไฟ (รวมการปิดผิว)</td>
+                                                <td>เมตร</td>
+                                                <td>1,300</td>
+                                                <td>
+                                                  <input
+                                                      class="form-control"
+                                                      type="text"
+                                                      placeholder="0"
+                                                      id="example-text-input"
+                                                      name="addon6"
+                                                      value="0"
+                                                    />
+                                                </td>
+                                                
+                                              </tr>
+                                              <tr>
+                                                <th scope="row">7</th>
+                                                <td>งานกรีดฝ้าเพดานและติดตั้ง ช่อง Service 60x60 cm</td>
+                                                <td>จุด</td>
+                                                <td>1,400</td>
+                                                <td>
+                                                  <input
+                                                      class="form-control"
+                                                      type="text"
+                                                      placeholder="0"
+                                                      id="example-text-input"
+                                                      name="addon7"
+                                                      value="0"
+                                                    />
+                                                </td>
+                                                
+                                              </tr>
+                                              <tr>
+                                                <th scope="row">8</th>
+                                                <td>ปลั๊กสําหรับใช้งานฉุกเฉิน พร้อมอุปกรณ์ RCBO ระยะไม่เกิน 3 เมตร</td>                                                   
+                                                <td>จุด</td>
+                                                <td>1,650</td>
+                                                <td>
+                                                  <input
+                                                      class="form-control"
+                                                      type="text"
+                                                      placeholder="0"
+                                                      id="example-text-input"
+                                                      name="addon8"
+                                                      value="0"
+                                                    />
+                                                </td>
+                                                
+                                              </tr>
+                                              <tr>
+                                                <th scope="row">9</th>
+                                                <td>ตู้เหล็กกันนําเบอร์ 5 พร้อมติดตั้ง (สําหรับใส่เครื่องชาร์จ)</td>                                                   
+                                                <td>ใบ</td>
+                                                <td>3,750</td>
+                                                <td>
+                                                  <input
+                                                      class="form-control"
+                                                      type="text"
+                                                      placeholder="0"
+                                                      id="example-text-input"
+                                                      name="addon9"
+                                                      value="0"
+                                                    />
+                                                </td>
+                                                
+                                              </tr>
+                                              <tr>
+                                                <th scope="row">10</th>
+                                                <td>ตู้เหล็กกระจกนิรภัยกันนําสีดําเบอร์ 6 พร้อมติดตั้ง</td>                                                   
+                                                <td>ใบ</td>
+                                                <td>6,450</td>
+                                                <td>
+                                                  <input
+                                                      class="form-control"
+                                                      type="text"
+                                                      placeholder="0"
+                                                      id="example-text-input"
+                                                      name="addon10"
+                                                      value="0"
+                                                    />
+                                                </td>
+                                                
+                                              </tr>
+                                              <tr>
+                                                <th scope="row">11</th>
+                                                <td>เคสแท่นชาร์จเหล็กพ่นสี ฐาน 17x27x0.3 cm / เสา 5x15x140 cm</td>                                                   
+                                                <td>จุด</td>
+                                                <td>5,350</td>
+                                                <td>
+                                                  <input
+                                                      class="form-control"
+                                                      type="text"
+                                                      placeholder="0"
+                                                      id="example-text-input"
+                                                      name="addon11"
+                                                      value="0"
+                                                    />
+                                                </td>
+                                                
+                                              </tr>
+                                              <tr>
+                                                <th scope="row">12</th>
+                                                <td>หมอนกั้นล้อ (Rubber)</td>                                                                                                       
+                                                <td>จุด</td>
+                                                <td>1,650</td>
+                                                <td>
+                                                  <input
+                                                      class="form-control"
+                                                      type="text"
+                                                      placeholder="0"
+                                                      id="example-text-input"
+                                                      name="addon12"
+                                                      value="0"
+                                                    />
+                                                </td>
+                                                
+                                              </tr>
+                                              <tr>
+                                                <th scope="row">13</th>
+                                                <td>งานทําสีช่องจอดตามแบบ (Epoxy) ขนาด 3x5 m</td>                                                                                                       
+                                                <td>ช่อง</td>
+                                                <td>23,600</td>
+                                                <td>
+                                                  <input
+                                                      class="form-control"
+                                                      type="text"
+                                                      placeholder="0"
+                                                      id="example-text-input"
+                                                      name="addon13"
+                                                      value="0"
+                                                    />
+                                                </td>
+                                                
+                                              </tr>
+                                              <tr>
+                                                <th scope="row">14</th>
+                                                <td>EV Charger Customizable stand design</td>                                                                                                       
+                                                <td>ตัว</td>
+                                                <td>23,600</td>
+                                                <td>
+                                                  <input
+                                                      class="form-control"
+                                                      type="text"
+                                                      placeholder="0"
+                                                      id="example-text-input"
+                                                      name="addon14"
+                                                      value="0"
+                                                    />
+                                                </td>
+                                                
+                                              </tr>
+                                              <tr>
+                                                <th scope="row">15</th>
+                                                <td>ถังดับเพลิง BF2000 พร้อมตู้</td>                                                                                                       
+                                                <td>ใบ</td>
+                                                <td>6,450</td>
+                                                <td>
+                                                  <input
+                                                      class="form-control"
+                                                      type="text"
+                                                      placeholder="0"
+                                                      id="example-text-input"
+                                                      name="addon15"
+                                                      value="0"
+                                                    />
+                                                </td>
+                                                
+                                              </tr>
+                                              {% if addon_total %}
+                                              <tr>
+                                                
+                                                <th scope="row"></th>
+                                                <td >
+                                                  <h4>ราคา Additional Service</h4>
+                                                  <!-- <button
+                                                  type="submit"
+                                                  name="submitaddon"
+                                                  class="btn btn w-md"
+                                                  style="background-color: #2f4f4f; color: #ffff"
+                                                >
+                                                  ราคา Add Service
+                                                </button> -->
+                                              </td>                                                                                                       
+                                                <td>
+                                                  
+                                                </td>
+                                                <td >
+                                                  
+                                                  
+                                                  <p style="font-weight: bold;">฿  {{ addon_total|intcomma }} </p>
+                                                  
+                                                 
+                                                
+                                              </td>
+                                                <td>
+                                                 
+                                                </td>
+                                                
+                                              </tr>
+                                              {% endif %}  
+                                          </tbody><!-- end tbody --> 
+                                      </table><!-- end table --> 
+                                  </div><!-- end responsive --> 
+                              </div><!-- end card body --> 
+                          </div><!-- end card --> 
+                      </div>
+                        
+                       
+                      </div>
+                      <!-- end row -->
+
+                      <div class="row mt-3">
+                        <div class="col-md-8">
+                        <button
+                          type="submit"
+                          name = "submittotal"
+                          class="btn btn w-md"
+                          style="background-color: #233D4D; color: #ffff"
+                        >
+                          ประเมินราคา
+                        </button>
+                        
+                      </div>
+                      
+                      
+                      <div class="col-md-3">
+                        {% if costtotal_addon %}
+                          
+                        <h4> {{ costtotal_addon|intcomma }}</h4>                        
+                        
+                        {% endif %}                      
+                      </div>
+                      <div>
+                     
+                        </div>
+                      </div>  
+                    </div>
+                    <!-- end card body -->
+                </div>
+
+              <!-- end card -->
+            </div>
+          </div>
+          
+          </form>
+          <!-- end row -->
+          <!-- End Form Layout -->
+          <div style="text-align: center;">
+            <a 
+              href="{% url 'payback'%}" 
+              class="btn btn w-md" 
+              style="background-color: #233D4D; color: #ffff; padding: 10px 20px; border-radius: 5px; text-decoration: none;"
+            >
+              ประเมินระยะเวลาการคืนทุน
+            </a>
+          </div>
+          <br>
+        </div>
+        <!-- container-fluid -->
+      </div>
+</div>
+{% endblock %}

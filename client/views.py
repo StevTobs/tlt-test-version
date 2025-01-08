@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseBadRequest, JsonResponse
 from django.views.decorators.http import require_GET
 from core.models import Province, Amphure, Tambon
+from client.models import Addon, DataCostElecAC , DataPriceAC
 from django.contrib import messages
 import logging
 from account.models import LocationData
@@ -253,3 +254,188 @@ def display_dataframe(request):
 #         long_running_task.delay()
 #         return JsonResponse({'status': 'Task started'})
 #     return render(request, 'client/start_task.html')
+
+def calculate_ev_cost(data, post_data):
+    # Retrieve values from the database
+    priceHV = data.priceHV
+    pricetr100 = data.pricetr100
+    pricetr160 = data.pricetr160
+    pricetr250 = data.pricetr250
+    pricetr315 = data.pricetr315
+    priceTRtoMDB = data.priceTRtoMDB
+    priceMDBtoEV = data.priceMDBtoEV
+    priceEV7 = data.priceEV7
+    priceEV22 = data.priceEV22
+    pricePackage = data.pricePackage
+
+    # Debug: print retrieved data
+    print(f"priceHV: {priceHV}, pricetr100: {pricetr100}, pricetr160: {pricetr160}, pricetr250: {pricetr250}")
+    
+    # Transformer price selection
+    transformer_type = post_data.get('transformerType')
+    transformer_prices = {
+        "100": float(pricetr100),
+        "160": float(pricetr160),
+        "250": float(pricetr250),
+        "315": float(pricetr315),
+    }
+    selected_price = transformer_prices.get(transformer_type, 0)
+
+    # EV selection
+    ev_type = post_data.get('evselection')
+    ev_prices = {
+        "7": float(priceEV7),
+        "22": float(priceEV22),
+    }
+    selected_price_ev = ev_prices.get(ev_type, 0)
+
+    # Package selection
+    packageadd = post_data.get('packageselection')
+    selected_price_package = float(pricePackage) if packageadd == "add" else 0
+
+    # Distance-based cost calculations
+    disthvtotr = post_data.get('disthvtotr', 0)
+    priceHV_dis = priceHV * float(disthvtotr) if disthvtotr else 0
+
+    distrtomdb = post_data.get('distrtomdb', 0)
+    priceTRtoMDB_dis = priceTRtoMDB * float(distrtomdb) if distrtomdb else 0
+
+    numev = int(post_data.get('numev', 0))
+    distmdbtoev = post_data.get('distmdbtoev', 0)
+    priceMDBtoEV_dis = priceMDBtoEV * float(distmdbtoev) if distmdbtoev else 0
+
+    # Calculate the total cost
+    costtotal = (
+        selected_price + priceHV_dis + 
+        numev * (selected_price_ev + selected_price_package) +
+        priceMDBtoEV_dis + priceTRtoMDB_dis
+    )
+
+    # Debug: print final calculated cost
+    print(f"Final EV cost calculated: {costtotal}")
+    return costtotal
+
+
+def calculate_addon_cost(data_addon, post_data):
+    addon_total = 0
+    for i in range(1, 16):
+        addon_price_field = f"addon{i}"
+        addon_quantity_field = f"addon{i}"
+
+        # Get the price for the current add-on from the database
+        price_addon = getattr(data_addon, addon_price_field, 0)
+
+        # Get the user input quantity for the current add-on
+        num_addon = int(post_data.get(addon_quantity_field, 0))
+
+        # Calculate the total for the current add-on
+        addon_total += price_addon * num_addon
+
+    return addon_total
+
+@login_required(login_url='login')
+def calcostev(request):
+    context = {"error": None, "costtotal": 0, "addon_total": 0, "costtotal_addon": 0}
+
+    if request.method == "POST":
+        try:
+
+            # If 'submittotal' is pressed, calculate the total cost
+            if 'submittotal' in request.POST:
+                data = DataPriceAC.objects.first()
+                data_addon = Addon.objects.first()
+
+                context["costtotal"] = calculate_ev_cost(data, request.POST)
+                context["addon_total"] = calculate_addon_cost(data_addon, request.POST)
+                context["costtotal_addon"] = context["costtotal"] + context["addon_total"]
+                print(f"Total (Cost + Addon): {context['costtotal_addon']}")
+
+        except Exception as e:
+            context["error"] = f"An error occurred: {str(e)}"
+
+    # Debug: check final context values
+    print(f"Final context: {context}")
+    return render(request, 'client/cost_ev.html', context)
+
+def payback(request):
+    context = {"error": None, "payback_period": None}
+
+    if request.method == "POST":
+        data_price_elec = DataCostElecAC.objects.first()
+        if not data_price_elec:
+            context["error"] = "Electricity cost data is missing. Please contact the administrator."
+            return render(request, 'client/payback.html', context)
+
+        fee = data_price_elec.fee
+        unitperhour = data_price_elec.unnitperhour
+        dayserviceperyear = data_price_elec.dayserviceperyear
+        price22onpeak = data_price_elec.price22onpeak
+        priceless22onpeak = data_price_elec.priceless22onpeak
+        price22offpeak = data_price_elec.price22offpeak
+        priceless22offpeak = data_price_elec.priceless22offpeak
+        try:
+            # Retrieve form data
+            cost_total = float(request.POST.get('cost_total', 0))
+            volt_type = request.POST.get('volt_selection')
+            
+            # Store cost_total in context
+            context["cost_total"] = cost_total
+            
+            # Define electricity costs
+            eleccost_onpeak = {
+                "22": float(price22onpeak),
+                "less22": float(priceless22onpeak),
+            }
+            eleccost_offpeak = {
+                "22": float(price22offpeak),
+                "less22": float(priceless22offpeak),
+            }
+
+            # Get the appropriate electricity cost based on voltage type
+            price_onpeak = eleccost_onpeak.get(volt_type, 0)
+            price_offpeak = eleccost_offpeak.get(volt_type, 0)
+
+            # Retrieve other form values
+            price_charge = float(request.POST.get('price_charge', 0))
+            hour_onpeak = float(request.POST.get('hours_onpeak', 0))
+            hour_offpeak = float(request.POST.get('hours_offpeak', 0))
+
+            # Calculate the total cost of electricity
+            total_elec_cost = (hour_onpeak * price_onpeak) + (hour_offpeak * price_offpeak)
+            print(total_elec_cost)
+            # Add percentage fee (convert fee to decimal if needed)
+            cost_fee = price_charge * fee
+            print(cost_fee)
+
+            # Operating costs (weekly usage for 7 days, 120 weeks in total)
+            operating_costs = (((cost_fee +  price_onpeak)*hour_onpeak)+((cost_fee+ price_offpeak)*hour_offpeak)) * unitperhour * dayserviceperyear
+
+            # Calculate income (revenue from charging over the same period)
+            income = price_charge * (hour_onpeak + hour_offpeak) * unitperhour * dayserviceperyear
+
+            # Calculate profit (net income)
+            profit = income - operating_costs
+
+            # Calculate payback period (time to recover initial cost)
+            if profit > 0:
+                total_months = cost_total / profit * 12  # Convert payback period to months
+                years = int(total_months // 12)          # Whole years
+                months = int(total_months % 12)          # Remaining months
+                payback_period = f"{years} ปี {months} เดือน "
+                context["payback_period"] = payback_period
+            else:
+                context["payback_period"] = "No payback possible (operating at a loss)"
+
+            # Store results in context
+            
+            context["income"] = income
+            context["profit"] = f"{profit:.2f}"
+            context["operating_costs"] = f"{operating_costs:.2f}"
+
+        except Exception as e:
+            import traceback
+            context["error"] = f"An error occurred: {str(e)}"
+            print(traceback.format_exc())
+
+    return render(request, 'client/payback.html', context)
+

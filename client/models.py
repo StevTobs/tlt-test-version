@@ -28,3 +28,55 @@ class ClientLocInfo(models.Model):
     user = models.ForeignKey(CustomUser, max_length=10, on_delete=models.CASCADE, null=True)
 
 
+class DataPriceAC (models.Model):
+    priceHV = models.FloatField(default=47621.48)
+    pricetr100 = models.FloatField(default=494589.76)
+    pricetr160 = models.FloatField(default=594384.00)
+    pricetr250 = models.FloatField(default=705095.10)
+    pricetr315 = models.FloatField(default=1192509.79)
+    priceTRtoMDB = models.FloatField(default=280.0)
+    priceMDBtoEV = models.FloatField(default=280.0)
+    priceEV7 = models.FloatField(default=21900.0)
+    priceEV22 = models.FloatField(default=0.0)
+    pricePackage = models.FloatField(default=16100.0)
+    choices =(
+        ("addpackage" , "รวม"),
+        ("nonpackage" , "ไม่รวม")
+    )
+
+    package = models.CharField(max_length=100,choices=choices,default=1)
+
+class DataCostElecAC(models.Model):
+       fee = models.FloatField(default=0.20)
+       unnitperhour = models.FloatField(default=7.0)
+       dayserviceperyear = models.IntegerField(default=120)
+       price22onpeak = models.FloatField(default=4.1839)
+       priceless22onpeak = models.FloatField(default=4.3297)
+       price22offpeak = models.FloatField(default=2.6037)
+       priceless22offpeak = models.FloatField(default=2.6369)
+    
+
+class Payment(models.Model):
+    customer = models.CharField(max_length=100)
+    email = models.EmailField(default='example@example.com')
+    tel = models.CharField(max_length=50, null=True, blank=True)
+    amount = models.DecimalField(max_digits=10, decimal_places=2,default=2590 )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+class Addon(models.Model):
+    addon1 = models.IntegerField(default=330)    
+    addon2 = models.IntegerField(default=550)
+    addon3 = models.IntegerField(default=220)  
+    addon4 = models.IntegerField(default=330) 
+    addon5 = models.IntegerField(default=810) 
+    addon6 = models.IntegerField(default=1300) 
+    addon7 = models.IntegerField(default=1400) 
+    addon8 = models.IntegerField(default=1650) 
+    addon9 = models.IntegerField(default=3750) 
+    addon10 = models.IntegerField(default=6450) 
+    addon11 = models.IntegerField(default=5350) 
+    addon12 = models.IntegerField(default=1650)
+    addon13 = models.IntegerField(default=23600)
+    addon14 = models.IntegerField(default=23600)
+    addon15 = models.IntegerField(default=6450) 
