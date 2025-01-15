@@ -2,6 +2,11 @@
 {% load static %} 
 {% load humanize %}
 {% block content %}
+
+
+
+
+
 <div class="container mt-5">
     
     <div class="page-content">
@@ -164,7 +169,13 @@
                         
                         {% if costtotal %}
                         <br>
-                        <div class="mb-3 row">
+                        <div class="card border-success mb-3" style="max-width: 20rem;">
+                          <div class="card-header">สรุปต้นทุน</div>
+                          <div class="card-body">
+                            <h4 class="card-title">{{ costtotal|floatformat:2|intcomma }}</h4>
+                            <p class="card-text">บาท</p>
+                          </div>
+                        <!-- <div class="mb-3 row">
                           <label
                             for="example-text-input"
                             class="col-md-8 col-form-label"
@@ -173,7 +184,8 @@
                           >
                           <div class="col-md-4">
                             
-                            <h3>{{ costtotal|floatformat:2|intcomma }}</h3>
+                            
+                            <h3>{{ costtotal|floatformat:2|intcomma }}</h3> -->
                           
                           
                           </div>
@@ -544,22 +556,33 @@
                         <button
                           type="submit"
                           name = "submittotal"
-                          class="btn btn w-md"
-                          style="background-color: #233D4D; color: #ffff"
+                          class="btn btn-light w-md"
+                  
                         >
-                          ประเมินราคา
+                          Add-on
                         </button>
+                        {% if costtotal_addon %}
+                          
+                        <button type="button" 
+                        onclick="window.location.href='{% url 'analytics-location' location.date|date:'c' %}'"
+                        class="btn btn w-md"
+                        style="background-color: #233D4D; color: #ffff">
+                    ตกลง
+                </button>                      
+                        
+                        {% endif %}  
+                        
                         
                       </div>
                       
                       
-                      <div class="col-md-3">
+                      <!-- <div class="col-md-3">
                         {% if costtotal_addon %}
                           
                         <h4> {{ costtotal_addon|intcomma }}</h4>                        
                         
                         {% endif %}                      
-                      </div>
+                      </div> -->
                       <div>
                      
                         </div>
@@ -576,13 +599,11 @@
           <!-- end row -->
           <!-- End Form Layout -->
           <div style="text-align: center;">
-            <a 
-              href="{% url 'payback'%}" 
-              class="btn btn w-md" 
-              style="background-color: #233D4D; color: #ffff; padding: 10px 20px; border-radius: 5px; text-decoration: none;"
-            >
-              ประเมินระยะเวลาการคืนทุน
-            </a>
+            <div class="col-md-8">
+         
+
+            </div>
+
           </div>
         </div>
         <!-- container-fluid -->

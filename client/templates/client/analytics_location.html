@@ -1,14 +1,20 @@
 {% extends 'client/navbar.html' %}
 
+{% load l10n %}
+
 {% block content %}
 <div class="container my-5">
     <h3 class="mb-4">ผลการวิเคราะห์พื้นที่</h3>
+    <small class="text-body-secondary"> Model AI จากข้อมูลล่าสุด ปี พ.ศ. 2566</small>
     
     <!-- Location Details -->
     <div class="row mb-4">
+        <br>
         <div class="col-md-16">
             <ul class="list-group">
-                <li class="list-group-item"><strong>Date:</strong> {{ location.date|date:"Y-m-d H:i:s" }}</li>
+
+                <li class="list-group-item active"><strong>ข้อมูลพื้นที่</strong></li>
+                <li class="list-group-item "><strong>วันที่ประเมินงาน: </strong> {{ location.date|date:" d/m/Y" }}</li>
                 <li class="list-group-item"><strong>Province:</strong> {{ location.province }}</li>
                 <li class="list-group-item"><strong>Amphure:</strong> {{ location.amphure }}</li>
                 <li class="list-group-item"><strong>Tambon:</strong> {{ location.tambon }}</li>
@@ -17,14 +23,91 @@
             </ul>
         </div>
     </div>
-
-        <!-- Display nearby stations -->
-        <div id="stationsResults" class="mt-4">
-            <!-- Results will be shown here -->
-          <!-- Results will be shown here -->
+        <!-- Back Button -->
+       
+        <!-- <a href="{% url 'display-dataframe' %}" class="btn btn-primary mt-4">display-dataframe</a> -->
+        <!-- 'get_coordinates' -->
     
-          <h4>สถานีในรัศมี 30 km</h4>
-          <!-- <label for="exampleTextarea" class="form-label mt-4">สถานีในรัศมี 30 km</label> -->
+
+            <!-- Statistics Cards -->
+<div class="row mb-4">
+    <!-- Card 1: Energy Utilization -->
+    <div class="col-md-4 mb-3">
+        <div class="card text-white bg-primary h-100 shadow-sm">
+            <div class="card-header d-flex align-items-center">
+                <i class="fas fa-car fa-2x me-3" aria-hidden="true"></i>
+                <h5 class="mb-0">ปริมาณรถยนต์ไฟฟ้าเฉลี่ยรายสัปดาห์ </h5>
+            </div>
+            <div class="card-body d-flex flex-column justify-content-center">
+                <h3 class="card-title display-6 text-center">{{ num_ev_avg|default:"--"|floatformat:0 }}  คัน</h3>
+                <p class="card-text text-center">
+                    ขาประจำ: {{num_res_ev_avg|default:"--"|floatformat:0}} คัน, ขาจร: {{num_tra_ev_avg|default:"--"|floatformat:0}}   คัน
+
+                </p>
+                <!-- <a href="#"  class="btn btn-light mt-3 disabled">AI Prediction(Future)</a> -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Card 2: Frequency Utilization -->
+    <div class="col-md-4 mb-3">
+        <div class="card text-white bg-success h-100 shadow-sm">
+            <div class="card-header d-flex align-items-center">
+                <i class="fas fa-clock fa-2x me-3" aria-hidden="true"></i>
+                <h5 class="mb-0">ปริมาณการอัดประจุรถยนต์ไฟฟ้าเฉลี่ยรายสัปดาห์ </h5>
+            </div>
+            <div class="card-body d-flex flex-column justify-content-center">
+                <h3 class="card-title display-6 text-center">{{kwh_ev_avg|default:"--"|floatformat:0}} kWh</h3>
+                <p class="card-text">
+                    <!-- ขาประจำ:  kWh, ขาจร:   kWh -->
+                </p>
+                <!-- <a href="#" class="btn btn-light mt-3">ดูรายละเอียด</a> -->
+            </div>
+
+        </div>
+        
+    </div>
+    
+    <!-- Card 3: Average Daily Charging Period -->
+    <div class="col-md-4 mb-3">
+        
+        <div class="card text-white bg-warning h-100 shadow-sm">
+            <div class="card-header d-flex align-items-center">
+                <i class="fas fa-bolt fa-2x me-3" aria-hidden="true"></i>
+                <h5 class="mb-0">ระยะเวลาเฉลี่ยในการชาร์จในแต่ละสัปดาห์</h5>
+            </div>
+            <div class="card-body d-flex flex-column justify-content-center">
+                <h3 class="card-title display-6 text-center">{{ hr_ev_avg|default:"--"|floatformat:0  }} ชั่วโมง</h3>
+                <!-- <p class="card-text">
+                    วันหยุด: {{ stats.charging_holiday }} ชั่วโมง, วันทำงาน: {{ stats.charging_workday }} ชั่วโมง
+                </p> -->
+                <!-- <a href="#"  class="btn btn-light mt-3">ดูรายละเอียด</a> -->
+            </div>
+        </div>
+    </div>
+    
+</div>
+
+<div class="row">
+</br>
+    <div class="card border-success col-md-12 mb-4" >
+        <div class="card-header">ข้อมูลศักยภาพพื้นที่</div>
+        <div class="card-body">
+          <h4 class="card-title">ศักยภาพในการสร้างรายได้ในแต่ละสัปดาห์</h4>
+          <p class="card-text"><strong>{{week_income_app}} บาท </strong>( {{month_income_app}}  บาท/เดือน, {{year_income_app}}  บาท/ปี )</p>
+
+          <h4 class="card-title">ศักยภาพในการสร้างกำไรในแต่ละสัปดาห์</h4>
+          <p class="card-text"><strong>{{week_bene_app}} บาท </strong>( {{month_bene_app}}  บาท/เดือน, {{year_bene_app}}  บาท/ปี ) บาท</p>
+          <small class="text-body-secondary"> ค่าที่ต้นทุนหน่วยละ 3.7 บาท | ราคาขายหน่วยละ 6.5 บาท</small>
+        </div>
+      </div>
+    </br>
+</div>
+
+
+
+        <div id="stationsResults" class="mt-4">
+          <h4>สถานีอัดประจุ PEAVOLTA ภายใน 50 km</h4>
           <textarea class="form-control" id="exampleTextarea" rows="10" readonly>
             {% if stations %}
                 {% for station in stations %}
@@ -38,87 +121,38 @@
         </textarea>
         
     </br>
-        </div>
 
 
 
-    <!-- Statistics Cards -->
-<div class="row mb-4">
-    <!-- Card 1: Energy Utilization -->
-    <div class="col-md-4 mb-3">
-        <div class="card text-white bg-primary h-100 shadow-sm">
-            <div class="card-header d-flex align-items-center">
-                <i class="fas fa-car fa-2x me-3" aria-hidden="true"></i>
-                <h5 class="mb-0">ปริมาณรถยนต์ไฟฟ้าเฉลี่ยรายสัปดาห์ </h5>
-            </div>
-            <div class="card-body d-flex flex-column justify-content-center">
-                <h3 class="card-title display-6">{{ stats.num_visits }} คัน</h3>
-                <a href="#"  class="btn btn-light mt-3">ดูรายละเอียด</a>
-            </div>
-        </div>
+
     </div>
-    
-    <!-- Card 2: Frequency Utilization -->
-    <div class="col-md-4 mb-3">
-        <div class="card text-white bg-success h-100 shadow-sm">
-            <div class="card-header d-flex align-items-center">
-                <i class="fas fa-clock fa-2x me-3" aria-hidden="true"></i>
-                <h5 class="mb-0">ปริมาณการอัดประจุรถยนต์ไฟฟ้าเฉลี่ยรายสัปดาห์ </h5>
-            </div>
-            <div class="card-body d-flex flex-column justify-content-center">
-                <h3 class="card-title display-6">{{ stats.avg_time_spent }} kWh</h3>
-                <p class="card-text">
-                    ขาประจำ:  kWh, ขาจร:   kWh
-                </p>
-                <a href="#" class="btn btn-light mt-3">ดูรายละเอียด</a>
-            </div>
 
-        </div>
-        
-    </div>
-    
-    <!-- Card 3: Average Daily Charging Period -->
-    <div class="col-md-4 mb-3">
-        
-        <div class="card text-white bg-warning h-100 shadow-sm">
-            <div class="card-header d-flex align-items-center">
-                <i class="fas fa-bolt fa-2x me-3" aria-hidden="true"></i>
-                <h5 class="mb-0">ระยะเวลาเฉลี่ยในการชาร์จในแต่ละวัน (Average Daily Charging Period)</h5>
-            </div>
-            <div class="card-body d-flex flex-column justify-content-center">
-                <h3 class="card-title display-6">{{ stats.average_charging_hours }} ชั่วโมง</h3>
-                <p class="card-text">
-                    วันหยุด: {{ stats.charging_holiday }} ชั่วโมง, วันทำงาน: {{ stats.charging_workday }} ชั่วโมง
-                </p>
-                <a href="#"  class="btn btn-light mt-3">ดูรายละเอียด</a>
-            </div>
-        </div>
-    </div>
-    
-</div>
+
+
 
 
     <!-- Charts Section -->
     <div class="row">
         <!-- Visits Over Time Chart -->
-        <div class="col-md-6 mb-4">
+        <div class="col-md-6">
             <div class="card">
                 <div class="card-header">
                     สรุปข้อมูลต้นทุน
                 </div>
                 <div class="card-body">
                     <div style="text-align: center;">
-                        <a 
-                          href="{% url 'cost-ev'%}" 
-                          class="btn btn w-md" 
-                          style="background-color: #233D4D; color: #ffff; padding: 10px 20px; border-radius: 5px; text-decoration: none;"
-                        >
-                          คำนวณต้นทุนการติดตั้ง EV Charger
-                        </a>
+                    <div style="text-align: center;">
+                        <a href="{% url 'cost-ev' location.date|date:'c' %}" class="btn btn-light" data-bs-toggle="offcanvas">คำนวณต้นทุนการติดตั้ง EV Charger</a>
+
                       </div>
+                      <small>*กรุณากดคำนวณต้นทุนการติดตั้ง EV Charger เพื่อคำนวณระยะเวลาการคืนทุน</small> 
+                    </div>
                       <br>
-                      <p>*กรุณากดคำนวณต้นทุนการติดตั้ง EV Charger เพื่อคำนวณระยะเวลาการคืนทุน</p> 
-                    <canvas id="visitsChart"></canvas>
+                      
+                    <!-- <canvas id="visitsChart"></canvas> -->
+
+                    </br>
+                </br>
                     <ul>
                         {% if summarydata.size_tr == ""%}
                         <li>ขนาดหม้อแปลง : ไม่ใช้หม้อแปลง</li>
@@ -136,7 +170,7 @@
                         <li>ระยะสายจากหม้อแปลง ถึง MDB เพิ่มจาก Package : {{summarydata.distrtomdb}} เมตร</li>
                         <li>ระยะสายจาก MDB ถึง เครื่องชาร์จ เพิ่มจาก Package  : {{summarydata.distmdbtoev}} เมตร</li>
                         <li>ราคา Addon Service : {{summarydata.addon_total}} ฿</li>  
-                        <li>ราคารวม : {{summarydata.cal_costtotal_addon}} ฿</li>
+                        <!-- <li>ราคารวม : {{summarydata.cal_costtotal_addon}} ฿</li> -->
                     </ul>
                 </div>
             </div>
@@ -149,25 +183,29 @@
                     สรุปข้อมูลด้านการลงทุน
                 </div>
                 <div class="card-body">
-                    <canvas id="timeSpentChart"></canvas>
+                    <!-- <canvas id="timeSpentChart"></canvas> -->
                     <ul>
-                        <li>ระยะเวลาคืนทุน (Return of Investment : ROI) :</li>
-                        <li>Point of Interest (POI) :</li>
-                       
+                        <li>ต้นทุน : {{summarydata.cal_costtotal_addon}}  บาท</li>
+                        <li>กำไร/ปี : {{year_bene_app}}   บาท</li>
+                        <li>ระยะเวลาคืนทุน (Return of Investment : ROI) : {{summarydata.roi}} </li>
+                        
                     
                     </ul>
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- Back Button -->
-    <a href="{% url 'location-analysis' %}" class="btn btn-secondary mt-4">Back to Report</a>
-
-    <a href="{% url 'display-dataframe' %}" class="btn btn-primary mt-4">display-dataframe</a>
-    <!-- 'get_coordinates' -->
+    <div class="d-grid gap-2">
+        <!-- <button onclick="window.location.href='{% url 'location-analysis' %}'" class="btn btn-lg btn-primary" type="button">Block button</button> -->
+        <a href="{% url 'location-analysis' %}" class="btn btn-light mt-4">กลับสู่หน้าแรก</a>
+        <!-- a href="#" class="btn btn-light mt-3" -->
+      </div>
+      </br>
+      
 
 </div>
+
+
 
 <!-- Chart.js Scripts -->
 <script>

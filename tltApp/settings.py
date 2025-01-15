@@ -158,3 +158,4 @@ FILE_UPLOAD_HANDLERS = [
 ASGI_APPLICATION = "tltApp.asgi.application"
 
 
+USE_L10N = True

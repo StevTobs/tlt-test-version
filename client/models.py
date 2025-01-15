@@ -101,3 +101,6 @@ class CalcostAc(models.Model):
      costtotal = models.DecimalField(max_digits=10, decimal_places=2,default=0)
      addon_total = models.DecimalField(max_digits=10, decimal_places=2 ,default=0)
      cal_costtotal_addon = models.DecimalField(max_digits=10, decimal_places=2,default=0)
+     roi = models.DecimalField(max_digits=10, decimal_places=2,default=0)
+     cap_kwh_thb = models.DecimalField(max_digits=10, decimal_places=2,default=0)
+     sell_kwh_thb = models.DecimalField(max_digits=10, decimal_places=2,default=0)

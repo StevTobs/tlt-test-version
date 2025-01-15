@@ -20,13 +20,11 @@ from .data_models.utils import get_lat_lon_geopy, get_lat_lon_google  # Assuming
 from .data_models.data_top_functions import near_stations  
 
 
-
 logger = logging.getLogger(__name__)
 @login_required(login_url='login')
 def client_dashboard(request):
     
     return render(request, 'client/client-dashboard.html')
-
 
 @login_required(login_url='login')
 def create_report(request):
@@ -89,55 +87,6 @@ def amphures(request):
     return render(request, 'client/partials/amphures.html', context)
 
 
-# @login_required(login_url='login')
-# @require_GET
-# def summary_data(request):
-#     province_id = request.GET.get('province')
-#     amphure_id = request.GET.get('amphure')
-
-#     logger.debug(f"Received amphure_id: {amphure_id}")
-#     logger.debug(f"Received province_id: {province_id}")
-
-#     if not province_id.isdigit() or not amphure_id.isdigit():
-#         logger.error("Invalid amphure_id received")
-#         # Add a warning message
-#         messages.warning(request, "กรุณาเลือกอำเภอที่ถูกต้อง")  # "Please select a valid district"
-
-#         # Redirect to the create report page
-#         return redirect('/client/create-report') # Replace with the correct URL name
-#         # return HttpResponseBadRequest("Invalid amphure_id")
-
-#     else :
-#         province_selected = None
-#         amphure_selected = None
-
-#         if province_id:
-#             province = get_object_or_404(Province, pk=province_id)
-#             # province = Province.objects.get(pk=province_id)
-#             province_selected = province.name_th
-
-#         if amphure_id:
-#             amphure = get_object_or_404(Amphure, pk=amphure_id)
-#             amphure_selected = amphure.name_th
-
-#         context = {
-#             'province_selected': province_selected,
-#             'amphure_selected': amphure_selected
-#         }
-
-#         return render(request, 'client/create-report.html', context)
-
-# @login_required(login_url='login')
-# def upload_file(request):
-#     if request.method == "POST":
-#         form = FileUploadForm(request.POST, request.FILES)
-#         if form.is_valid():
-#             return JsonResponse({"status": "success", "message": "File uploaded successfully!"})
-#     else:
-#         form = FileUploadForm()
-
-#     return render(request, "client/client-upload.html", {"form": form})
-
 @login_required(login_url='my-login')
 def add_location(request):
     if request.method == 'POST':
@@ -157,23 +106,18 @@ def add_location(request):
     return render(request, 'client/add-location.html', context)
 
 
-@login_required(login_url='login')  # Ensure only logged-in users can access
+@login_required(login_url='login')  
 def user_locations(request):
-    # Fetch all LocationData entries for the logged-in user
     locations = LocationData.objects.filter(user=request.user)
     context = {'locations': locations}
     return render(request, 'client/user-locations.html', context)
 
-
-
 @login_required(login_url='login')
 def location_analysis(request):
-  
-    # Pass the logged-in user to the form
+    reset_db()
     locations = LocationData.objects.filter(user=request.user)
     context = {'locations': locations}
     return render(request, 'client/location_analysis.html', context)
-
 
 def load_amphures(request):
     province_id = request.GET.get('province')
@@ -181,110 +125,86 @@ def load_amphures(request):
     return render(request, "client/amphure_option.html", {'amphures': amphures})
 
 def load_tambons(request):
-    # Retrieve the amphure ID from the GET parameters
     amphure_id = request.GET.get('amphure')
-
-    # Query the Tambon model for the selected amphure
     tambons = Tambon.objects.filter(amphure_id=amphure_id).order_by('name_th')
-
-    # Render the template with the list of tambons
     return render(request, "client/tambon_option.html", {'tambons': tambons})
-
-
-
 
 @login_required(login_url='login')
 def edit_location(request, pk):
-    # Retrieve the location by date and user
     location = get_object_or_404(LocationData, date=pk, user=request.user)
-
     if request.method == 'POST':
-        # Bind the form to the POST data
         form = LocationDataForm(request.POST, instance=location, user=request.user)
         if form.is_valid():
-            form.save()  # Save the changes
-            return redirect('user-locations')  # Redirect to the locations list
+            form.save()  
+            return redirect('user-locations')  
     else:
-        # Prepopulate the form with the current location data
         form = LocationDataForm(instance=location, user=request.user)
-
     return render(request, 'client/edit_location.html', {'form': form, 'location': location})
 
 @login_required(login_url='login')
 def delete_location(request, pk):
-    # `pk` will be a datetime object parsed by the converter
-    location = get_object_or_404(LocationData, date=pk, user=request.user)  # Match on `date` field
+    location = get_object_or_404(LocationData, date=pk, user=request.user)  
     if request.method == 'POST':
         location.delete()
-        return redirect('user-locations')  # Redirect after successful deletion
-    return redirect('user-locations')  # Redirect if accessed via GET
-
+        return redirect('user-locations') 
+    return redirect('user-locations') 
 
 @login_required(login_url='login')
 def analytics_location(request, pk):
-    # Retrieve the location using the primary key (date)
-    location = get_object_or_404(LocationData, date=pk, user=request.user)
-
-    # Default values for latitude and longitude
-    lat, lng = None, None
-
    
+    cost_total_data = CalcostAc.objects.last()
+    location = get_object_or_404(LocationData, date=pk, user=request.user)
+    lat, lng = None, None
+    avg_ev_num = []
     
-    # If the location is found, get the lat and lng
     if location:
         lat = float(location.lat)
         lng = float(location.lng)
-
-        # Call near_stations with latitude and longitude if available
+        
+        # Get nearby stations
         results = near_stations(lat, lng)
+        
 
-        avg_ev_num = []
-                    
-        for station in results['info']:
-            # Check if the 'avg_ev_num_weekly_66' value is not NaN
-            avg_ev_value = station.get('avg_ev_num_weekly_66', None)
-            if avg_ev_value is not None and not isinstance(avg_ev_value, str):  # Ensure it's a valid number
-                avg_ev_num.append(float(avg_ev_value))
-
-            # Convert the list of averages to a numpy array
-        avg_ev_num = np.array(avg_ev_num)
-
-        # Filter out NaN values using numpy
-        avg_ev_num = avg_ev_num[~np.isnan(avg_ev_num)]
-
-        # Calculate and print the average of valid numbers
-        if len(avg_ev_num ) > 0:
-            # print("average: ", avg_ev_num.mean())
-            avg_ev_num = np.array([avg_ev_num.mean() ])  # NumPy array with a single value
-    
-    # Convert it to a scalar for easy access in the template
-            avg_ev_num = avg_ev_num.item()  # This converts the NumPy array to a scalar
-        else:
-            avg_ev_num  = None
-    
-    cost_total_data = CalcostAc.objects.last()
-    # context = {'summarydata': cost_total_data,
     context = {
         'summarydata': cost_total_data,
-        'location': location,  # Pass the single location object
-        'stations': results.get('info') if results else [],  # Use results and safely access 'info' key
-        'mean' : str( avg_ev_num ),
+        'location': location,  
+        'stations': results.get('info') if results else [],  
+        'mean': str(avg_ev_num),
+        'num_ev_avg': results.get('num_ev_avg') if results else '-',  
+        'num_res_ev_avg': results.get('num_res_ev_avg') if results else '-',
+        'num_tra_ev_avg': results.get('num_tra_ev_avg') if results else '-', 
+        'kwh_ev_avg': results.get('kwh_ev_avg') if results else '-',
+        'hr_ev_avg': results.get('hr_ev_avg') if results else '-', 
+        'week_income_app': results.get('week_income_app') if results else '-', 
+        'month_income_app': results.get('month_income_app') if results else '-', 
+        'year_income_app': results.get('year_income_app') if results else '-', 
+        'week_bene_app': results.get('week_bene_app') if results else '-', 
+        'month_bene_app': results.get('month_bene_app') if results else '-', 
+        'year_bene_app': results.get('year_bene_app') if results else '-', 
     }
-
+    
     return render(request, 'client/analytics_location.html', context)
 
-# @login_required(login_url='login')
-# def analytics_location(request, pk):
-#     # Retrieve the location using the primary key (date)
-#     location = get_object_or_404(LocationData, date=pk, user=request.user)
-#     cost_total_data = CalcostAc.objects.last()
-#     context = {'summarydata': cost_total_data,
-#                'location': location}
-#     return render(request, 'client/analytics_location.html',context)
+def reset_db():
 
+    # Save data to the database
+    costtotal_addon = CalcostAc()
+    costtotal_addon.cal_costtotal_addon = 0
+    costtotal_addon.costtotal = 0
+    costtotal_addon.addon_total = 0
+    costtotal_addon.numev = 0
+    costtotal_addon.size_tr = 0
+    costtotal_addon.disthvtotr = 0
+    costtotal_addon.packageadd = 0
+    costtotal_addon.distrtomdb = 0
+    costtotal_addon.distmdbtoev = 0
+    costtotal_addon.price_ev_7kw = 0
+    costtotal_addon.roi = 0
+    costtotal_addon.cap_kwh_thb = 3.7
+    costtotal_addon.sell_kwh_thb = 6.5
+    costtotal_addon.save()
 
 def display_dataframe(request):
-    # Example DataFrame
     data = {
         'Date': ['2025-01-01', '2025-01-02', '2025-01-03'],
         'Province': ['Bangkok', 'Chiang Mai', 'Phuket'],
@@ -294,11 +214,7 @@ def display_dataframe(request):
         'Longitude': [100.5018, 98.9853, 98.3923]
     }
     df = pd.DataFrame(data)
-    
-    # Convert DataFrame to HTML
     df_html = df.to_html(classes='table table-striped table-bordered table-hover', index=False)
-    # df_html = df.to_html(classes='table table-striped', index=False)
-    
     context = {
         'table': df_html
     }
@@ -307,7 +223,9 @@ def display_dataframe(request):
 
 
 
-# ---- Bonuds Part ------------
+# ---- ---- Bonus Part ------------
+
+
 def calculate_ev_cost(data, post_data):
     # Retrieve values from the database
     priceHV = data.priceHV
@@ -390,9 +308,21 @@ def calculate_addon_cost(data_addon, post_data):
 
 
 @login_required(login_url='login')
-def calcostev(request):
-    context = {"error": None, "costtotal": 0, "addon_total": 0, "costtotal_addon": 0}
+def calcostev(request, pk):
+    # Fetch the location data for the given 'pk' and user
+    location = get_object_or_404(LocationData, date=pk, user=request.user)
 
+    context = {
+        "error": None, 
+        "costtotal": 0, 
+        "addon_total": 0, 
+        "costtotal_addon": 0,
+        "location": location
+    }
+
+    lat, lng = None, None
+    ROI = "n/a"
+    # Handle the form submission for cost calculation
     if request.method == "POST":
         try:
             if 'submittotal' in request.POST:
@@ -402,8 +332,29 @@ def calcostev(request):
                 # Calculate costs
                 context["costtotal"] = calculate_ev_cost(data, request.POST)
                 context["addon_total"] = calculate_addon_cost(data_addon, request.POST)
-                context["costtotal_addon"] = context["costtotal"] + context["addon_total"]
+                # Calculate the total cost
+                context["costtotal_addon"] = context["costtotal"]  +  context["addon_total"] 
 
+           
+                if location:
+                    lat = float(location.lat)
+                    lng = float(location.lng)
+                    
+                    # Get nearby stations
+                    results = near_stations(lat, lng)
+
+                    # Calculate ROI, handling 'year_bene_app' being a string with commas
+                    year_bene_app = results.get('year_bene_app', 0)
+                    try:
+                        # Make sure the 'year_bene_app' value is a valid float by removing commas
+                        year_bene_app = year_bene_app.replace(",", "") if isinstance(year_bene_app, str) else year_bene_app
+                        ROI =  float(context["costtotal_addon"]) / float(year_bene_app) if year_bene_app else 'N/A'
+                    except ValueError:
+                        ROI = "n/a"
+                else:
+                    ROI = "n/a"
+
+                context["ROI"] = ROI
                 # Retrieve additional values from POST data
                 context["numev"] = int(request.POST.get("numev", 0))
                 context["size_tr"] = request.POST.get("transformerType", "")
@@ -425,6 +376,7 @@ def calcostev(request):
                 costtotal_addon.distrtomdb = context["distrtomdb"]
                 costtotal_addon.distmdbtoev = context["distmdbtoev"]
                 costtotal_addon.price_ev_7kw = context["price_ev_7kw"]
+                costtotal_addon.roi = context["ROI"]
                 costtotal_addon.save()
 
                 print(f"Total (Cost + Addon): {context['costtotal_addon']}")
@@ -432,8 +384,16 @@ def calcostev(request):
         except Exception as e:
             context["error"] = f"An error occurred: {str(e)}"
 
+    # cost_total_data = CalcostAc.objects.last()
+    # context['summarydata'] = cost_total_data
+
     # Debug: check final context values
+        # Debug: check final context values
     print(f"Final context: {context}")
+    print(f"ROI: {ROI}")
+
+
+    # Return the rendered template with the context
     return render(request, 'client/cost_ev.html', context)
 
 
@@ -529,7 +489,13 @@ def payback(request):
 # def summarycostev(request):
 #     return render (request,'client/analytics-location.html')
 def cost_dc(request):
-    return render(request,'client/calcostev_dc.html')
+
+    location = get_object_or_404(LocationData, date=pk)
+
+
+
+
+    return render(request,'client/calcostev_dc.html', {"location": location})
 
 
 @login_required(login_url='login')

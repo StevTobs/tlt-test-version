@@ -36,34 +36,31 @@
       <ul class="navbar-nav me-auto">
         <li class="nav-item">
           <a class="nav-link" href="{% url 'home' %}">
-            Home
+            หน้าหลัก
           </a>
         </li>
 
         <li class="nav-item">
-          <a class="nav-link" href="{% url 'add-location' %}"> Add </a>
-        </li>
-
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'cost-ev' %}"> Cost </a>
-        </li>
-
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'location-analysis' %}"> Location Analytics </a>
+          <a class="nav-link" href="{% url 'add-location' %}"> เพิ่มสถานที่ </a>
         </li>
 
 
         <li class="nav-item">
-          <a class="nav-link" href="{% url 'user-locations' %}"> Edit </a>
+          <a class="nav-link" href="{% url 'user-locations' %}"> แก้ไขสถานที่</a>
         </li>
 
         <li class="nav-item">
-          <a class="nav-link" href="{% url 'payment' %}"> Payment </a>
+          <a class="nav-link" href="{% url 'location-analysis' %}"> วิเคราะห์ด้วย AI</a>
         </li>
 
 
         <li class="nav-item">
-          <a class="nav-link" href="{% url 'user-logout' %}"> Logout </a>
+          <a class="nav-link" href="{% url 'payment' %}"> ชำระเงิน </a>
+        </li>
+
+
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'user-logout' %}"> ลงชื่อออก </a>
         </li>
       </ul>
     </div>
