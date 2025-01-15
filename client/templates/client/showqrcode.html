@@ -1,0 +1,158 @@
+{% extends 'client/navbar.html' %}
+{% load static %} 
+{% load humanize %}
+{% block content %}
+<div class="page-content">
+  <div class="container-fluid">
+    <!-- start page title -->
+    <div class="row">
+      <div class="col-12">
+        <div
+          class="page-title-box d-flex align-items-center justify-content-between"
+        >
+          <h4 class="mb-0"></h4>
+
+          <!-- <div class="page-title-right">
+                                <ol class="breadcrumb m-0">
+                                    <li class="breadcrumb-item"><a href="javascript: void(0);">Components</a></li>
+                                    <li class="breadcrumb-item active">Forms Elements</li>
+                                </ol>
+                            </div> -->
+        </div>
+      </div>
+    </div>
+    <!-- end page title -->
+
+    <div class="row">
+      <div class="col-12">
+        <div class="card">
+          <div
+            class="card-header justify-content-between d-flex align-items-center"
+            style="background-color: #2f4f4f"
+          >
+            <h4 class="card-title" style="color: #ffff">ชำระเงิน</h4>
+          </div>
+          <!-- end card header -->
+          <form method="POST">
+            <div class="card-body">
+              <div class="row">
+                <div class="col-xl-6">
+                  
+                  <div class="mb-3 row">
+                    <label
+                      for="example-text-input"
+                      class="col-md-6 col-form-label"
+                      >ชื่อ - นามสกุล</label
+                    >
+                    <div class="col-md-6">
+                      <label
+                        for="example-text-input"
+                        class="col-form-label"
+                        >{{payment.customer}}</label
+                      >
+                    </div>
+                  </div>
+                  <div class="mb-3 row">
+                    <label
+                      for="example-text-input"
+                      class="col-md-6 col-form-label"
+                      >เบอร์โทรศัพท์</label
+                    >
+                    <div class="col-md-6">
+                      <label
+                        for="example-text-input"
+                        class="col-form-label"
+                        >{{payment.tel}}</label
+                      >
+                    </div>
+                  </div>
+                  <div class="mb-3 row">
+                    <label
+                      for="example-text-input"
+                      class="col-md-6 col-form-label"
+                      >Email</label
+                    >
+                    <div class="col-md-6">
+                        <label
+                        for="example-text-input"
+                        class="col-form-label"
+                        >{{payment.email}}</label
+                      >
+                    </div>
+                  </div>
+                  <div class="mb-3 row">
+                    <label
+                      for="example-text-input"
+                      class="col-md-6 col-form-label"
+                      >ราคาค่าวิเคราะห์</label
+                    >
+                    <div class="col-md-6">
+                        <label
+                        for="example-text-input"
+                        class="col-md-6 col-form-label"
+                        style="font-size: large;">฿ 2590</label
+                      >
+                    </div>
+                  </div>
+                </div>
+                <!-- end row -->
+
+                <!-- end col -->
+
+                <div class="col-xl-6">
+                    
+                </div>
+                <!-- end col -->
+              </div>
+              <!-- end row -->
+              
+                {% comment %} <div class="mb-2 mt-3">
+                  <button
+                    type="submit"
+                    class="btn btn w-md"
+                    style="background-color: #2f4f4f; color: #ffff"
+                  >
+                    ชำระเงิน
+                  </button>
+                </div>                    {% endcomment %}
+                                
+            </div>
+            
+            <!-- end card body -->
+          </form>
+        </div>
+        <!-- end card -->
+      </div>
+      <!-- end col -->
+    </div>
+    <!-- end row -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-xl-4">
+                        </div>
+                        <div class="col-xl-4">
+                             
+                            {% if payment %}
+                            {% comment %} <h1>{{payment.customer}}</h1> {% endcomment %}
+                            <img src="{% url 'create_qrcode' payment.id %}" alt="QR Code">
+                            {% endif %} 
+                        </div>
+                        <div class="col-xl-4">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    
+    <!-- end row -->
+    <!-- End Form Layout -->
+  </div>
+  <!-- container-fluid -->
+</div>
+<!-- End Page-content -->
+{% endblock %}

@@ -68,6 +68,7 @@
             </div>
         </div>
     </div>
+    
 </div>
 
 
@@ -80,6 +81,17 @@
                     สรุปข้อมูลต้นทุน
                 </div>
                 <div class="card-body">
+                    <div style="text-align: center;">
+                        <a 
+                          href="{% url 'cost-ev'%}" 
+                          class="btn btn w-md" 
+                          style="background-color: #233D4D; color: #ffff; padding: 10px 20px; border-radius: 5px; text-decoration: none;"
+                        >
+                          คำนวณต้นทุนการติดตั้ง EV Charger
+                        </a>
+                      </div>
+                      <br>
+                      <p>*กรุณากดคำนวณต้นทุนการติดตั้ง EV Charger เพื่อคำนวณระยะเวลาการคืนทุน</p> 
                     <canvas id="visitsChart"></canvas>
                     <ul>
                         <li>ขนาดตู้ชาร์จ :</li>

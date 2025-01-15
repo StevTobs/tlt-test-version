@@ -1,13 +1,17 @@
 from django.shortcuts import render,redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseBadRequest, JsonResponse
+from django.http import HttpResponseBadRequest, JsonResponse,HttpResponse
 from django.views.decorators.http import require_GET
 from core.models import Province, Amphure, Tambon
-from client.models import Addon, DataCostElecAC , DataPriceAC
+from client.models import Addon, DataCostElecAC , DataPriceAC ,Payment ,CalcostAc
 from django.contrib import messages
 import logging
 from account.models import LocationData
 from .forms import LocationDataForm
+from decouple import config
+import json
+import uuid
+import requests
 
 import pandas as pd
 from django_pandas.io import read_frame
@@ -277,25 +281,27 @@ def calculate_ev_cost(data, post_data):
         "100": float(pricetr100),
         "160": float(pricetr160),
         "250": float(pricetr250),
-        "315": float(pricetr315),
     }
     selected_price = transformer_prices.get(transformer_type, 0)
 
     # EV selection
-    ev_type = post_data.get('evselection')
-    ev_prices = {
-        "7": float(priceEV7),
-        "22": float(priceEV22),
-    }
-    selected_price_ev = ev_prices.get(ev_type, 0)
-
+    # ev_type = post_data.get('evselection')
+    # ev_prices = {
+    #     "7": float(priceEV7),
+    #     "22": float(priceEV22),
+    # }
+    # selected_price_ev = ev_prices.get(ev_type, 0)
+    price_ev_7kw = float(post_data.get('priceEV',0))
     # Package selection
     packageadd = post_data.get('packageselection')
     selected_price_package = float(pricePackage) if packageadd == "add" else 0
 
     # Distance-based cost calculations
-    disthvtotr = post_data.get('disthvtotr', 0)
-    priceHV_dis = priceHV * float(disthvtotr) if disthvtotr else 0
+    disthvtotr = float(post_data.get('disthvtotr', 0))
+    if disthvtotr > 1: 
+        priceHV_dis = (priceHV * disthvtotr) + 212 if disthvtotr else 0
+    else:
+        priceHV_dis = priceHV * disthvtotr if disthvtotr else 0
 
     distrtomdb = post_data.get('distrtomdb', 0)
     priceTRtoMDB_dis = priceTRtoMDB * float(distrtomdb) if distrtomdb else 0
@@ -307,7 +313,7 @@ def calculate_ev_cost(data, post_data):
     # Calculate the total cost
     costtotal = (
         selected_price + priceHV_dis + 
-        numev * (selected_price_ev + selected_price_package) +
+        numev * (price_ev_7kw + selected_price_package) +
         priceMDBtoEV_dis + priceTRtoMDB_dis
     )
 
@@ -348,6 +354,11 @@ def calcostev(request):
                 context["costtotal"] = calculate_ev_cost(data, request.POST)
                 context["addon_total"] = calculate_addon_cost(data_addon, request.POST)
                 context["costtotal_addon"] = context["costtotal"] + context["addon_total"]
+
+                costtotal_addon = CalcostAc()
+                costtotal_addon.cal_costtotal_addon = context["costtotal_addon"]
+                
+                costtotal_addon.save()
                 print(f"Total (Cost + Addon): {context['costtotal_addon']}")
 
         except Exception as e:
@@ -358,14 +369,25 @@ def calcostev(request):
     return render(request, 'client/cost_ev.html', context)
 
 def payback(request):
-    context = {"error": None, "payback_period": None}
+    context = {"error": None, "payback_period": None, "cost_total": 0}
 
-    if request.method == "POST":
+    try:
+        # Fetch the total cost data
+        cost_total_data = CalcostAc.objects.last()
+        if not cost_total_data:
+            context["error"] = "Cost data is missing. Please contact the administrator."
+            return render(request, 'client/payback.html', context)
+        
+        cost_total = cost_total_data.cal_costtotal_addon
+        context["cost_total"] = float(cost_total)
+        
+        # Fetch electricity cost data
         data_price_elec = DataCostElecAC.objects.first()
         if not data_price_elec:
             context["error"] = "Electricity cost data is missing. Please contact the administrator."
             return render(request, 'client/payback.html', context)
 
+        # Retrieve required data for electricity costs
         fee = data_price_elec.fee
         unitperhour = data_price_elec.unnitperhour
         dayserviceperyear = data_price_elec.dayserviceperyear
@@ -373,69 +395,170 @@ def payback(request):
         priceless22onpeak = data_price_elec.priceless22onpeak
         price22offpeak = data_price_elec.price22offpeak
         priceless22offpeak = data_price_elec.priceless22offpeak
-        try:
-            # Retrieve form data
-            cost_total = float(request.POST.get('cost_total', 0))
-            volt_type = request.POST.get('volt_selection')
-            
-            # Store cost_total in context
-            context["cost_total"] = cost_total
-            
-            # Define electricity costs
-            eleccost_onpeak = {
-                "22": float(price22onpeak),
-                "less22": float(priceless22onpeak),
-            }
-            eleccost_offpeak = {
-                "22": float(price22offpeak),
-                "less22": float(priceless22offpeak),
-            }
 
-            # Get the appropriate electricity cost based on voltage type
-            price_onpeak = eleccost_onpeak.get(volt_type, 0)
-            price_offpeak = eleccost_offpeak.get(volt_type, 0)
+        # Retrieve form values and perform basic validation
+        volt_type = request.POST.get('volt_selection')
+        if volt_type not in ["22", "less22"]:
+            context["error"] = "Invalid voltage type selected."
+            return render(request, 'client/payback.html', context)
+        
+        price_charge = float(request.POST.get('price_charge', 0))
+        hour_onpeak = float(request.POST.get('hours_onpeak', 0))
+        hour_offpeak = float(request.POST.get('hours_offpeak', 0))
+        dayuse = int(request.POST.get('day', 0))
+        # Define electricity costs
+        eleccost_onpeak = {
+            "22": float(price22onpeak),
+            "less22": float(priceless22onpeak),
+        }
+        eleccost_offpeak = {
+            "22": float(price22offpeak),
+            "less22": float(priceless22offpeak),
+        }
 
-            # Retrieve other form values
-            price_charge = float(request.POST.get('price_charge', 0))
-            hour_onpeak = float(request.POST.get('hours_onpeak', 0))
-            hour_offpeak = float(request.POST.get('hours_offpeak', 0))
+        # Calculate electricity cost
+        price_onpeak = eleccost_onpeak.get(volt_type, 0)
+        price_offpeak = eleccost_offpeak.get(volt_type, 0)
 
-            # Calculate the total cost of electricity
-            total_elec_cost = (hour_onpeak * price_onpeak) + (hour_offpeak * price_offpeak)
-            print(total_elec_cost)
-            # Add percentage fee (convert fee to decimal if needed)
-            cost_fee = price_charge * fee
-            print(cost_fee)
+        total_elec_cost = (hour_onpeak * price_onpeak) + (hour_offpeak * price_offpeak)
+        cost_fee = price_charge * fee
 
-            # Operating costs (weekly usage for 7 days, 120 weeks in total)
-            operating_costs = (((cost_fee +  price_onpeak)*hour_onpeak)+((cost_fee+ price_offpeak)*hour_offpeak)) * unitperhour * dayserviceperyear
+        # Operating costs (weekly usage for 7 days, 120 weeks in total)
+        operating_costs = (((cost_fee + price_onpeak) * hour_onpeak) + ((cost_fee + price_offpeak) * hour_offpeak)) * unitperhour * dayuse
 
-            # Calculate income (revenue from charging over the same period)
-            income = price_charge * (hour_onpeak + hour_offpeak) * unitperhour * dayserviceperyear
+        # Income (revenue from charging over the same period)
+        income = price_charge * (hour_onpeak + hour_offpeak) * unitperhour * dayuse
 
-            # Calculate profit (net income)
-            profit = income - operating_costs
+        # Calculate profit
+        profit = round(income - operating_costs, 2)
 
-            # Calculate payback period (time to recover initial cost)
-            if profit > 0:
-                total_months = cost_total / profit * 12  # Convert payback period to months
-                years = int(total_months // 12)          # Whole years
-                months = int(total_months % 12)          # Remaining months
-                payback_period = f"{years} ปี {months} เดือน "
-                context["payback_period"] = payback_period
-            else:
-                context["payback_period"] = "No payback possible (operating at a loss)"
+        # Calculate payback period (time to recover initial cost)
+        if profit > 0:
+            # total_months = round(cost_total / profit * 12, 2)
+            # Convert Decimal to float
+            total_months = float(cost_total) / float(profit) * 12
 
-            # Store results in context
-            
-            context["income"] = income
-            context["profit"] = f"{profit:.2f}"
-            context["operating_costs"] = f"{operating_costs:.2f}"
+            years = int(total_months // 12)
+            months = int(total_months % 12)
+            payback_period = f"{years} ปี {months} เดือน"
+            context["payback_period"] = payback_period
+        else:
+            context["payback_period"] = "No payback possible (operating at a loss)"
 
-        except Exception as e:
-            import traceback
-            context["error"] = f"An error occurred: {str(e)}"
-            print(traceback.format_exc())
+        # Store results in context
+        context["income"] = income
+        context["profit"] = f"{profit:.2f}"
+        context["operating_costs"] = f"{operating_costs:.2f}"
+
+    except Exception as e:
+        import traceback
+        context["error"] = f"An error occurred: {str(e)}"
+        print(traceback.format_exc())
 
     return render(request, 'client/payback.html', context)
 
+def cost_dc(request):
+    return render(request,'client/calcostev_dc.html')
+
+@login_required(login_url='login')
+def create_qrcode(request, payment_id):
+    print("<-----create_qrcode----->")
+    print("Payment ID:", payment_id)
+    
+    try:
+        # Retrieve payment object
+        payment = Payment.objects.get(id=payment_id)
+    except Payment.DoesNotExist:
+        return HttpResponse("Payment not found.", status=404)
+    
+    # Required values
+    amount = payment.amount
+    referenceNo = str(uuid.uuid4())[:6]
+    detail = "TamLayThong"
+    customerName = payment.customer
+    customerEmail = "psps1.pea@gmail.com"  # Replace with dynamic value if available
+
+    print("amount:", amount)
+    print("referenceNo:", referenceNo)
+    print("detail:", detail)
+    print("customerName:", customerName)
+
+    # URL configuration
+    url_hh = config('LINK', default='https://fallback-url.com')
+    url = "https://pupa.pea.co.th/api/qrcode-payment/"
+
+    # Payload
+    payload = json.dumps({
+        "amount": str(amount),
+        "referenceNo": referenceNo,
+        "backgroundUrl": f"{url_hh}/payment_success_qr_code/{payment_id}/",
+        "detail": detail,
+        "customerName": customerName,
+        "customerEmail": customerEmail,
+        "merchantDefined1": "",
+        "merchantDefined2": "",
+        "merchantDefined3": "",
+        "merchantDefined4": "",
+        "merchantDefined5": "",
+        "customerTelephone": "",
+        "customerAddress": ""
+    })
+
+    headers = {
+        'Content-Type': 'application/json'
+    }
+
+    try:
+        # Send POST request to generate the QR code
+        response = requests.post(url, headers=headers, data=payload)
+
+        # Handle binary PNG response
+        if response.status_code == 200 and response.headers.get('Content-Type') == 'image/png':
+            return HttpResponse(response.content, content_type="image/png")
+        
+        # Handle JSON response
+        elif response.status_code == 200:
+            return JsonResponse(response.json())
+
+        else:
+            print(f"Request failed with status code {response.status_code} and response: {response.text}")
+            return HttpResponse(f"Request failed: {response.text}", status=response.status_code)
+
+    except requests.exceptions.Timeout:
+        print("Request timed out")
+        return HttpResponse("Request timed out", status=504)
+
+    except requests.exceptions.RequestException as e:
+        print(f"Request failed: {e}")
+        return HttpResponse(f"Request failed: {e}", status=500)
+
+def payment_page(request, payment_id):
+    try:
+        payment = Payment.objects.get(id=payment_id)
+        return render(request, 'client/showqrcode.html', {'payment': payment})
+    except Payment.DoesNotExist:
+        return HttpResponse("Payment not found", status=404)
+
+@login_required(login_url='login')    
+def payment(request):
+    if request.method == "POST":
+        name = request.POST.get("name")
+        tel = request.POST.get("tel")
+        email = request.POST.get("email")
+
+        cuspay = Payment()
+        cuspay.customer = name
+        cuspay.email = email
+        cuspay.tel = tel
+
+        cuspay.save()
+
+        return redirect("payment/{}".format(cuspay.id))
+        # if name == "":
+        #     print("ใส่ข้อมูล")
+        # else:
+        #     print(name)
+        #     print(tell)
+        #     print(email)
+    else:
+        return render(request,'client/payment.html')

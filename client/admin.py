@@ -1,5 +1,5 @@
 from django.contrib import admin
-from . models import ClientLocInfo,DataPriceAC,Addon,DataCostElecAC
+from . models import ClientLocInfo,DataPriceAC,Addon,DataCostElecAC,Payment,CalcostAc
 
 admin.site.register(ClientLocInfo)
 
@@ -26,3 +26,18 @@ class StatementAdmin(admin.ModelAdmin):
         "priceless22offpeak" 
     ]
 admin.site.register(DataCostElecAC,StatementAdmin)
+
+class StatementAdmin(admin.ModelAdmin):
+    list_display =[
+        "customer","email","tel","amount","created_at"
+      
+    ]
+admin.site.register(Payment,StatementAdmin)
+
+class StatementAdmin(admin.ModelAdmin):
+    list_display =[
+        "created_at_cost","size_tr","disthvtotr","numev","price_ev_7kw","packageadd","distrtomdb",
+        "distmdbtoev","costtotal","addon_total","cal_costtotal_addon"
+      
+    ]
+admin.site.register(CalcostAc,StatementAdmin)

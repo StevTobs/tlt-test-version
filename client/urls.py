@@ -37,5 +37,9 @@ urlpatterns = [
     path('analytics-location/<datetime:pk>/', views.analytics_location, name='analytics-location'),
     path('display-dataframe/', views.display_dataframe, name='display-dataframe'),
     path('cost-ev/',views.calcostev,name='cost-ev'),
+    path('cost-ev-dc/',views.cost_dc,name='cost_dc'),
     path('payback/',views.payback,name='payback'),
+    path('payment/<int:payment_id>/', views.payment_page, name='payment_page'),
+    path('create_qrcode/<int:payment_id>', views.create_qrcode, name='create_qrcode'),
+    path('pay', views.payment, name='payment'),
 ]

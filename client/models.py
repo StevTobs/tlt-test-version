@@ -80,3 +80,24 @@ class Addon(models.Model):
     addon13 = models.IntegerField(default=23600)
     addon14 = models.IntegerField(default=23600)
     addon15 = models.IntegerField(default=6450) 
+
+
+class Payment(models.Model):
+    customer = models.CharField(max_length=100)
+    email = models.EmailField(default='example@example.com')
+    tel = models.CharField(max_length=50, null=True, blank=True)
+    amount = models.DecimalField(max_digits=10, decimal_places=2,default=2590 )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+class CalcostAc(models.Model):
+     created_at_cost = models.DateTimeField(auto_now_add=True)
+     size_tr = models.CharField(max_length=10, blank=True, null=True)
+     disthvtotr = models.DecimalField(max_digits=10, decimal_places=2,default=0)
+     numev = models.IntegerField(blank=True, null=True)
+     price_ev_7kw = models.DecimalField(max_digits=10, decimal_places=2,default=0)
+     packageadd = models.CharField(max_length=10, blank=True, null=True)
+     distrtomdb = models.DecimalField(max_digits=10, decimal_places=2,default=0)
+     distmdbtoev = models.DecimalField(max_digits=10, decimal_places=2,default=0)
+     costtotal = models.DecimalField(max_digits=10, decimal_places=2,default=0)
+     addon_total = models.DecimalField(max_digits=10, decimal_places=2 ,default=0)
+     cal_costtotal_addon = models.DecimalField(max_digits=10, decimal_places=2,default=0)
