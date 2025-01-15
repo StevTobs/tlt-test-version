@@ -11,3 +11,4 @@ django-extensions
 setuptools
 requests
 channels
+python-decouple

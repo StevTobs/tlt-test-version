@@ -2,7 +2,7 @@ from django import forms
 from account.models import LocationData
 from core.models import Province, Amphure, Tambon
 import logging
-from .data_models.utils import get_lat_lon_geopy  # Assuming you placed the function in utils.py
+from .data_models.utils import get_lat_lon_geopy, get_lat_lon_google  # Assuming you placed the function in utils.py
 
 # Initialize logger
 log = logging.getLogger(__name__)
@@ -130,7 +130,7 @@ class LocationDataForm(forms.ModelForm):
         # Compute latitude and longitude based on selected province, amphoe, and tambon
         if instance.province and instance.amphoe and instance.tambon:
             try:
-                lat, lng = get_lat_lon_geopy(instance.province.name_th, instance.amphoe.name_th, instance.tambon.name_th)
+                lat, lng = get_lat_lon_google(instance.province.name_th, instance.amphoe.name_th, instance.tambon.name_th)
                 instance.lat = lat
                 instance.lng = lng
             except Exception as e:
@@ -162,7 +162,7 @@ class LocationDataForm(forms.ModelForm):
 
         # Compute latitude and longitude based on selected province, amphoe, and tambon
         if province_instance and amphure_instance and tambon_instance:
-            lat, lon = get_lat_lon_geopy(province_instance.name_th, amphure_instance.name_th, tambon_instance.name_th)
+            lat, lon = get_lat_lon_google(province_instance.name_th, amphure_instance.name_th, tambon_instance.name_th)
             if lat and lon:
                 instance.lat = lat
                 instance.lng = lon

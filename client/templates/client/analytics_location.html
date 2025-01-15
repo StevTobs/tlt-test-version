@@ -6,7 +6,7 @@
     
     <!-- Location Details -->
     <div class="row mb-4">
-        <div class="col-md-6">
+        <div class="col-md-16">
             <ul class="list-group">
                 <li class="list-group-item"><strong>Date:</strong> {{ location.date|date:"Y-m-d H:i:s" }}</li>
                 <li class="list-group-item"><strong>Province:</strong> {{ location.province }}</li>
@@ -17,6 +17,30 @@
             </ul>
         </div>
     </div>
+
+        <!-- Display nearby stations -->
+        <div id="stationsResults" class="mt-4">
+            <!-- Results will be shown here -->
+          <!-- Results will be shown here -->
+    
+          <h4>สถานีในรัศมี 30 km</h4>
+          <!-- <label for="exampleTextarea" class="form-label mt-4">สถานีในรัศมี 30 km</label> -->
+          <textarea class="form-control" id="exampleTextarea" rows="10" readonly>
+            {% if stations %}
+                {% for station in stations %}
+                    Station Name: {{ station.stationName }} 
+                    อยู่ห่างออกไป: {{ station.distance|floatformat:2 }} km 
+                    -----------------------------------
+                {% endfor %}
+            {% else %}
+                No nearby stations found.
+            {% endif %}
+        </textarea>
+        
+    </br>
+        </div>
+
+
 
     <!-- Statistics Cards -->
 <div class="row mb-4">
@@ -50,10 +74,12 @@
             </div>
 
         </div>
+        
     </div>
     
     <!-- Card 3: Average Daily Charging Period -->
     <div class="col-md-4 mb-3">
+        
         <div class="card text-white bg-warning h-100 shadow-sm">
             <div class="card-header d-flex align-items-center">
                 <i class="fas fa-bolt fa-2x me-3" aria-hidden="true"></i>

@@ -4,10 +4,27 @@ from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseU
 from django.utils import timezone
 from django.core.exceptions import ValidationError
 from django.utils.timezone import now
-from client.data_models.utils import get_lat_lon_geopy  # Import the utility function
+from client.data_models.utils import get_lat_lon_geopy, get_lat_lon_google  # Import the utility function
 
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, first_name, last_name, password=None, **extra_fields):
+        """
+        Creates and saves a User with the given email, first_name, last_name, and
+        password.
+
+        Args:
+            email (str): The email address of the user.
+            first_name (str): The first name of the user.
+            last_name (str): The last name of the user.
+            password (str, optional): The password of the user. Defaults to None.
+            **extra_fields: Additional keyword arguments to be passed to the User model.
+
+        Raises:
+            ValueError: If the email is not set.
+
+        Returns:
+            CustomUser: The created user.
+        """
         if not email:
             raise ValueError("The Email field must be set")
         email = self.normalize_email(email)
@@ -89,7 +106,7 @@ class LocationData(models.Model):
         if not self.lat or not self.lng:
             try:
                 # Fetch latitude and longitude using the utility function
-                latitude, longitude = get_lat_lon_geopy(
+                latitude, longitude = get_lat_lon_google(
                     province=self.province,
                     amphoe=self.amphure,
                     tambon=self.tambon

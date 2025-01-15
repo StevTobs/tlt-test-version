@@ -14,8 +14,10 @@ import uuid
 import requests
 
 import pandas as pd
+import numpy as np
 from django_pandas.io import read_frame
-from .data_models.utils import get_lat_lon_geopy  # Assuming you placed the function in utils.py
+from .data_models.utils import get_lat_lon_geopy, get_lat_lon_google  # Assuming you placed the function in utils.py
+from .data_models.data_top_functions import near_stations  
 
 
 
@@ -217,22 +219,68 @@ def delete_location(request, pk):
         return redirect('user-locations')  # Redirect after successful deletion
     return redirect('user-locations')  # Redirect if accessed via GET
 
-@login_required(login_url='login')
-def analytics_report(request):
-    # Retrieve all locations for the logged-in user
-    locations = LocationData.objects.filter(user=request.user)
-
-    return render(request, 'client/analytics_report.html', {'locations': locations})
-
 
 @login_required(login_url='login')
 def analytics_location(request, pk):
     # Retrieve the location using the primary key (date)
     location = get_object_or_404(LocationData, date=pk, user=request.user)
+
+    # Default values for latitude and longitude
+    lat, lng = None, None
+
+   
+    
+    # If the location is found, get the lat and lng
+    if location:
+        lat = float(location.lat)
+        lng = float(location.lng)
+
+        # Call near_stations with latitude and longitude if available
+        results = near_stations(lat, lng)
+
+        avg_ev_num = []
+                    
+        for station in results['info']:
+            # Check if the 'avg_ev_num_weekly_66' value is not NaN
+            avg_ev_value = station.get('avg_ev_num_weekly_66', None)
+            if avg_ev_value is not None and not isinstance(avg_ev_value, str):  # Ensure it's a valid number
+                avg_ev_num.append(float(avg_ev_value))
+
+            # Convert the list of averages to a numpy array
+        avg_ev_num = np.array(avg_ev_num)
+
+        # Filter out NaN values using numpy
+        avg_ev_num = avg_ev_num[~np.isnan(avg_ev_num)]
+
+        # Calculate and print the average of valid numbers
+        if len(avg_ev_num ) > 0:
+            # print("average: ", avg_ev_num.mean())
+            avg_ev_num = np.array([avg_ev_num.mean() ])  # NumPy array with a single value
+    
+    # Convert it to a scalar for easy access in the template
+            avg_ev_num = avg_ev_num.item()  # This converts the NumPy array to a scalar
+        else:
+            avg_ev_num  = None
+    
     cost_total_data = CalcostAc.objects.last()
-    context = {'summarydata': cost_total_data,
-               'location': location}
-    return render(request, 'client/analytics_location.html',context)
+    # context = {'summarydata': cost_total_data,
+    context = {
+        'summarydata': cost_total_data,
+        'location': location,  # Pass the single location object
+        'stations': results.get('info') if results else [],  # Use results and safely access 'info' key
+        'mean' : str( avg_ev_num ),
+    }
+
+    return render(request, 'client/analytics_location.html', context)
+
+# @login_required(login_url='login')
+# def analytics_location(request, pk):
+#     # Retrieve the location using the primary key (date)
+#     location = get_object_or_404(LocationData, date=pk, user=request.user)
+#     cost_total_data = CalcostAc.objects.last()
+#     context = {'summarydata': cost_total_data,
+#                'location': location}
+#     return render(request, 'client/analytics_location.html',context)
 
 
 def display_dataframe(request):
