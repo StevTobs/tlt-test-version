@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseBadRequest, JsonResponse,HttpResponse
 from django.views.decorators.http import require_GET
 from core.models import Province, Amphure, Tambon
-from client.models import Addon, DataCostElecAC , DataPriceAC ,Payment ,CalcostAc
+from client.models import Addon, DataCostElecAC , DataPriceAC ,Payment ,CalcostAc 
 from django.contrib import messages
 import logging
 from account.models import LocationData
@@ -221,6 +221,7 @@ def delete_location(request, pk):
 def analytics_report(request):
     # Retrieve all locations for the logged-in user
     locations = LocationData.objects.filter(user=request.user)
+
     return render(request, 'client/analytics_report.html', {'locations': locations})
 
 
@@ -228,7 +229,10 @@ def analytics_report(request):
 def analytics_location(request, pk):
     # Retrieve the location using the primary key (date)
     location = get_object_or_404(LocationData, date=pk, user=request.user)
-    return render(request, 'client/analytics_location.html', {'location': location})
+    cost_total_data = CalcostAc.objects.last()
+    context = {'summarydata': cost_total_data,
+               'location': location}
+    return render(request, 'client/analytics_location.html',context)
 
 
 def display_dataframe(request):
@@ -252,13 +256,10 @@ def display_dataframe(request):
     }
     return render(request, 'analytics/display_dataframe.html', context)
 
-# def start_task(request):
-#     if request.method == 'POST':
-#         # Start the long-running task
-#         long_running_task.delay()
-#         return JsonResponse({'status': 'Task started'})
-#     return render(request, 'client/start_task.html')
 
+
+
+# ---- Bonuds Part ------------
 def calculate_ev_cost(data, post_data):
     # Retrieve values from the database
     priceHV = data.priceHV
@@ -339,26 +340,45 @@ def calculate_addon_cost(data_addon, post_data):
 
     return addon_total
 
+
 @login_required(login_url='login')
 def calcostev(request):
     context = {"error": None, "costtotal": 0, "addon_total": 0, "costtotal_addon": 0}
 
     if request.method == "POST":
         try:
-
-            # If 'submittotal' is pressed, calculate the total cost
             if 'submittotal' in request.POST:
                 data = DataPriceAC.objects.first()
                 data_addon = Addon.objects.first()
 
+                # Calculate costs
                 context["costtotal"] = calculate_ev_cost(data, request.POST)
                 context["addon_total"] = calculate_addon_cost(data_addon, request.POST)
                 context["costtotal_addon"] = context["costtotal"] + context["addon_total"]
 
+                # Retrieve additional values from POST data
+                context["numev"] = int(request.POST.get("numev", 0))
+                context["size_tr"] = request.POST.get("transformerType", "")
+                context["disthvtotr"] = float(request.POST.get("disthvtotr", 0))
+                context["packageadd"] = request.POST.get("packageselection", "")
+                context["distrtomdb"] = float(request.POST.get("distrtomdb", 0))
+                context["distmdbtoev"] = float(request.POST.get("distmdbtoev", 0))
+                context["price_ev_7kw"] = float(request.POST.get("priceEV", 0))
+
+                # Save data to the database
                 costtotal_addon = CalcostAc()
                 costtotal_addon.cal_costtotal_addon = context["costtotal_addon"]
-                
+                costtotal_addon.costtotal = context["costtotal"]
+                costtotal_addon.addon_total = context["addon_total"]
+                costtotal_addon.numev = context["numev"]
+                costtotal_addon.size_tr = context["size_tr"]
+                costtotal_addon.disthvtotr = context["disthvtotr"]
+                costtotal_addon.packageadd = context["packageadd"]
+                costtotal_addon.distrtomdb = context["distrtomdb"]
+                costtotal_addon.distmdbtoev = context["distmdbtoev"]
+                costtotal_addon.price_ev_7kw = context["price_ev_7kw"]
                 costtotal_addon.save()
+
                 print(f"Total (Cost + Addon): {context['costtotal_addon']}")
 
         except Exception as e:
@@ -367,6 +387,7 @@ def calcostev(request):
     # Debug: check final context values
     print(f"Final context: {context}")
     return render(request, 'client/cost_ev.html', context)
+
 
 def payback(request):
     context = {"error": None, "payback_period": None, "cost_total": 0}
@@ -457,8 +478,11 @@ def payback(request):
 
     return render(request, 'client/payback.html', context)
 
+# def summarycostev(request):
+#     return render (request,'client/analytics-location.html')
 def cost_dc(request):
     return render(request,'client/calcostev_dc.html')
+
 
 @login_required(login_url='login')
 def create_qrcode(request, payment_id):
@@ -562,3 +586,6 @@ def payment(request):
         #     print(email)
     else:
         return render(request,'client/payment.html')
+    
+
+

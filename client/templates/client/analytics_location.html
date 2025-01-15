@@ -94,12 +94,23 @@
                       <p>*กรุณากดคำนวณต้นทุนการติดตั้ง EV Charger เพื่อคำนวณระยะเวลาการคืนทุน</p> 
                     <canvas id="visitsChart"></canvas>
                     <ul>
-                        <li>ขนาดตู้ชาร์จ :</li>
-                        <li>จำนวนตู้ชาร์จ :</li>
-                        <li>ระยะทางเดินสายไฟ :</li>
-                        <li>ขนาดหม้อแปลง :</li>
-                        <li>ค่าติดตั้ง :</li>
-                        <li>... :</li>
+                        {% if summarydata.size_tr == ""%}
+                        <li>ขนาดหม้อแปลง : ไม่ใช้หม้อแปลง</li>
+                        {% else %}
+                        <li>ขนาดหม้อแปลง :{{summarydata.size_tr}} kVA</li>
+                        {% endif %}
+                        <li>ระยะสายแรงสูงถึงหม้อแปลง : {{summarydata.disthvtotr}} เมตร</li>
+                        <li>ขนาดตู้ชาร์จ : 7 kW</li>
+                        <li>จำนวนตู้ชาร์จ : {{summarydata.numev}} เครื่อง</li>
+                        {% if summarydata.packageadd == "add"%}
+                        <li>รวม Pakage การวิเคราะห์หรือไม่ : รวมติดตั้ง </li>
+                        {% else %}
+                        <li>รวม Pakage การวิเคราะห์หรือไม่ : ไม่รวมการติดตั้ง </li>
+                        {% endif %}
+                        <li>ระยะสายจากหม้อแปลง ถึง MDB เพิ่มจาก Package : {{summarydata.distrtomdb}} เมตร</li>
+                        <li>ระยะสายจาก MDB ถึง เครื่องชาร์จ เพิ่มจาก Package  : {{summarydata.distmdbtoev}} เมตร</li>
+                        <li>ราคา Addon Service : {{summarydata.addon_total}} ฿</li>  
+                        <li>ราคารวม : {{summarydata.cal_costtotal_addon}} ฿</li>
                     </ul>
                 </div>
             </div>
