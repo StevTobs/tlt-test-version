@@ -26,7 +26,7 @@ def reset_db():
 
 def near_stations(lat, lng):
     
-    reset_db()
+    # reset_db()
     data_model = pd.read_csv("./client/data_models/ext-data-model/tlt_model.csv")
 
     if not all(col in data_model.columns for col in ['lat', 'lng', 'stationName']):
@@ -86,8 +86,8 @@ def near_stations(lat, lng):
 
     cost_total_data = CalcostAc.objects.last()
  
-    thb_cap = float(cost_total_data.cap_kwh_thb)
-    thb_sell = float(cost_total_data.sell_kwh_thb )
+    thb_cap = 3.7
+    thb_sell = 6.5
 
     thb_margin = thb_sell - thb_cap 
     week_income_app = kwh_ev_avg * thb_sell

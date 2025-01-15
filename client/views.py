@@ -332,10 +332,8 @@ def calcostev(request, pk):
                 # Calculate costs
                 context["costtotal"] = calculate_ev_cost(data, request.POST)
                 context["addon_total"] = calculate_addon_cost(data_addon, request.POST)
-                # Calculate the total cost
-                context["costtotal_addon"] = context["costtotal"]  +  context["addon_total"] 
-
-           
+                context["costtotal_addon"] = context["costtotal"] + context["addon_total"]
+                
                 if location:
                     lat = float(location.lat)
                     lng = float(location.lng)

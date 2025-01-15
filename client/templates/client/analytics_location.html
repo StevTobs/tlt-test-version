@@ -170,7 +170,7 @@
                         <li>ระยะสายจากหม้อแปลง ถึง MDB เพิ่มจาก Package : {{summarydata.distrtomdb}} เมตร</li>
                         <li>ระยะสายจาก MDB ถึง เครื่องชาร์จ เพิ่มจาก Package  : {{summarydata.distmdbtoev}} เมตร</li>
                         <li>ราคา Addon Service : {{summarydata.addon_total}} ฿</li>  
-                        <!-- <li>ราคารวม : {{summarydata.cal_costtotal_addon}} ฿</li> -->
+                        <li>ราคารวม : {{summarydata.cal_costtotal_addon}} ฿</li>
                     </ul>
                 </div>
             </div>
@@ -178,6 +178,18 @@
 
         <!-- Time Spent Distribution Chart -->
         <div class="col-md-6 mb-4">
+            {{summarydata.cal_costtotal_addon}}
+            {% if summarydata.cal_costtotal_addon == 0 %}
+            <div class="card">
+                <div class="card-header">
+                    สรุปข้อมูลด้านการลงทุน
+                </div>
+                <div class="card-body">
+                    <!-- <canvas id="timeSpentChart"></canvas> -->
+                    ---
+                </div>
+            </div>
+            {% else %}
             <div class="card">
                 <div class="card-header">
                     สรุปข้อมูลด้านการลงทุน
@@ -193,6 +205,8 @@
                     </ul>
                 </div>
             </div>
+
+            {% endif %}
         </div>
     </div>
     <div class="d-grid gap-2">
